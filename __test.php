@@ -1,56 +1,145 @@
-<?php
-include_once PATH_TEMP_INC."/head.php";
-?>
-<body>
+<?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?>
+
 <?
-$APPLICATION->ShowPanel = true;
-$APPLICATION->ShowPanel();
+use Bitrix\Main\Localization\Loc;
+use Bitrix\Sale\Location;
+
+Loc::loadMessages(__FILE__);
+
+if ($arParams["UI_FILTER"])
+{
+  $arParams["USE_POPUP"] = true;
+}
+
 ?>
-<!-- Start Header Area -->
-<link rel="stylesheet" href="/assets/css/core_rv.css"/>
-<header class="default-header">
-  <div class="menutop-wrap">
-    <div class="menu-top container">
-      <div class="d-flex justify-content-end align-items-center">
 
+<?if(!empty($arResult['ERRORS']['FATAL'])):?>
 
-          <?php
-          if ($USER->IsAuthorized()) { ?>
-            <div class="data-account">
-              Вы авторизованны как: <span class="account-name"><?=$USER->GetLogin()?></span> <a class="logout" href="/logout">x</a>
-            </div>
-        <ul class="list">
-            <li><a target="_blank" href="<?=TEMPLATE?>page.reg.php">Добавить вакансию</a></li>
-            <li><a target="_blank" href="<?=TEMPLATE?>page.reg.php">Добавить резюме</a></li>
-        </ul>
-          <?php
-          } else { ?>
-        <ul class="list">
-            <li><a target="_blank" href="<?=TEMPLATE?>page.login.php">Авторизация</a></li>
-            <li><a target="_blank" href="<?=TEMPLATE?>page.reg.php">Регистрация</a></li>
-        </ul>
-            <?php
-          }
-          ?>
-        </ul>
+  <?foreach($arResult['ERRORS']['FATAL'] as $error):?>
+    <?ShowError($error)?>
+  <?endforeach?>
+
+<?else:?>
+
+  <?CJSCore::Init();?>
+  <?$GLOBALS['APPLICATION']->AddHeadScript('/bitrix/js/sale/core_ui_widget.js')?>
+  <?$GLOBALS['APPLICATION']->AddHeadScript('/bitrix/js/sale/core_ui_etc.js')?>
+  <?$GLOBALS['APPLICATION']->AddHeadScript('/bitrix/js/sale/core_ui_autocomplete.js');?>
+
+  <div id="sls-<?=$arResult['RANDOM_TAG']?>" class="bx-sls form-control <?if(strlen($arResult['MODE_CLASSES'])):?> <?=$arResult['MODE_CLASSES']?><?endif?>">
+
+    <?if(is_array($arResult['DEFAULT_LOCATIONS']) && !empty($arResult['DEFAULT_LOCATIONS'])):?>
+
+      <div class="bx-ui-sls-quick-locations quick-locations">
+
+        <?foreach($arResult['DEFAULT_LOCATIONS'] as $lid => $loc):?>
+          <a href="javascript:void(0)" data-id="<?=intval($loc['ID'])?>" class="quick-location-tag"><?=htmlspecialcharsbx($loc['NAME'])?></a>
+        <?endforeach?>
+
       </div>
+
+    <?endif?>
+
+    <? $dropDownBlock = $arParams["UI_FILTER"] ? "dropdown-block-ui" : "dropdown-block"; ?>
+    <div style="width: 100%;" class="<?=$dropDownBlock?> bx-ui-sls-input-block">
+
+      <span class="dropdown-icon"></span>
+      <input type="text" autocomplete="off" name="<?=$arParams['INPUT_NAME']?>" value="<?=$arResult['VALUE']?>" class="dropdown-field form-control" placeholder="<?=Loc::getMessage('SALE_SLS_INPUT_SOME')?> ..." />
+
+      <div class="dropdown-fade2white"></div>
+      <div class="bx-ui-sls-loader"></div>
+      <div class="bx-ui-sls-clear" title="<?=Loc::getMessage('SALE_SLS_CLEAR_SELECTION')?>"></div>
+      <div class="bx-ui-sls-pane"></div>
+
     </div>
+
+    <script type="text/html" data-template-id="bx-ui-sls-error">
+      <div class="bx-ui-sls-error">
+        <div></div>
+        {{message}}
+      </div>
+    </script>
+
+    <script type="text/html" data-template-id="bx-ui-sls-dropdown-item">
+      <div class="dropdown-item bx-ui-sls-variant">
+        <span class="dropdown-item-text">{{display_wrapped}}</span>
+        <?if($arResult['ADMIN_MODE']):?>
+          [{{id}}]
+        <?endif?>
+      </div>
+    </script>
+
+    <div class="bx-ui-sls-error-message">
+      <?if(!$arParams['SUPPRESS_ERRORS']):?>
+        <?if(!empty($arResult['ERRORS']['NONFATAL'])):?>
+
+          <?foreach($arResult['ERRORS']['NONFATAL'] as $error):?>
+            <?ShowError($error)?>
+          <?endforeach?>
+
+        <?endif?>
+      <?endif?>
+    </div>
+
   </div>
-  <nav class="navbar navbar-expand-lg navbar-light">
-    <div class="container">
-      <a class="navbar-brand" href="<?=TEMPLATE?>">
-        <img src="<?=TEMPLATE?>img/logo.png" alt="">
-      </a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-              aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
 
-      <div class="collapse navbar-collapse justify-content-end align-items-center" id="navbarSupportedContent">
-        <ul class="navbar-nav">
-          <?php require PATH_TEMP_INC."/menu_top.php"; ?>
-        </ul>
-      </div>
-    </div>
-  </nav>
-</header>
+  <script>
+
+    if (!window.BX && top.BX)
+      window.BX = top.BX;
+
+    <?if(strlen($arParams['JS_CONTROL_DEFERRED_INIT'])):?>
+    if(typeof window.BX.locationsDeferred == 'undefined') window.BX.locationsDeferred = {};
+    window.BX.locationsDeferred['<?=$arParams['JS_CONTROL_DEFERRED_INIT']?>'] = function(){
+      <?endif?>
+
+      <?if(strlen($arParams['JS_CONTROL_GLOBAL_ID'])):?>
+      if(typeof window.BX.locationSelectors == 'undefined') window.BX.locationSelectors = {};
+      window.BX.locationSelectors['<?=$arParams['JS_CONTROL_GLOBAL_ID']?>'] =
+      <?endif?>
+
+        new BX.Sale.component.location.selector.search(<?=CUtil::PhpToJSObject(array(
+
+          // common
+          'scope' => 'sls-'.$arResult['RANDOM_TAG'],
+          'source' => $this->__component->getPath().'/get.php',
+          'query' => array(
+            'FILTER' => array(
+              'EXCLUDE_ID' => intval($arParams['EXCLUDE_SUBTREE']),
+              'SITE_ID' => $arParams['FILTER_BY_SITE'] && !empty($arParams['FILTER_SITE_ID']) ? $arParams['FILTER_SITE_ID'] : ''
+            ),
+            'BEHAVIOUR' => array(
+              'SEARCH_BY_PRIMARY' => $arParams['SEARCH_BY_PRIMARY'] ? '1' : '0',
+              'LANGUAGE_ID' => LANGUAGE_ID
+            ),
+          ),
+
+          'selectedItem' => !empty($arResult['LOCATION']) ? $arResult['LOCATION']['VALUE'] : false,
+          'knownItems' => $arResult['KNOWN_ITEMS'],
+          'provideLinkBy' => $arParams['PROVIDE_LINK_BY'],
+
+          'messages' => array(
+            'nothingFound' => Loc::getMessage('SALE_SLS_NOTHING_FOUND'),
+            'error' => Loc::getMessage('SALE_SLS_ERROR_OCCURED'),
+          ),
+
+          // "js logic"-related part
+          'callback' => $arParams['JS_CALLBACK'],
+          'useSpawn' => $arParams['USE_JS_SPAWN'] == 'Y',
+          'usePopup' => ($arParams["USE_POPUP"] ? true : false),
+          'initializeByGlobalEvent' => $arParams['INITIALIZE_BY_GLOBAL_EVENT'],
+          'globalEventScope' => $arParams['GLOBAL_EVENT_SCOPE'],
+
+          // specific
+          'pathNames' => $arResult['PATH_NAMES'], // deprecated
+          'types' => $arResult['TYPES'],
+
+        ), false, false, true)?>);
+
+      <?if(strlen($arParams['JS_CONTROL_DEFERRED_INIT'])):?>
+    };
+    <?endif?>
+
+  </script>
+
+<?endif?>

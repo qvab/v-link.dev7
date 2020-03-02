@@ -102,7 +102,7 @@ $APPLICATION->SetTitle("Поиск вакансий");
 
           <div class="radio">
             <input type="radio" name="sortby" id="sortby2" value="option2">
-            <label for="sortby2">Сначала новыеt</label>
+            <label for="sortby2">Сначала новые</label>
           </div>
 
           <div class="radio">

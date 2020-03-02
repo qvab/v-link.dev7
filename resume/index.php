@@ -3,12 +3,9 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 $APPLICATION->SetTitle("Поиск резюме");
 ?>
 
-
   <div class="container page-name">
     <h1 class="text-center white">Поиск резюме</h1>
   </div>
-
-
 
   <div class="container">
     <form action="#">
@@ -102,7 +99,7 @@ $APPLICATION->SetTitle("Поиск резюме");
 
           <div class="radio">
             <input type="radio" name="sortby" id="sortby2" value="option2">
-            <label for="sortby2">Сначала новыеt</label>
+            <label for="sortby2">Сначала новые</label>
           </div>
 
           <div class="radio">
@@ -131,6 +128,30 @@ $APPLICATION->SetTitle("Поиск резюме");
 
 
   <main>
+
+    <?
+    $arSelect = Array("ID", "IBLOCK_ID", "NAME", "DATE_ACTIVE_FROM", "PREVIEW_PICTURE", "PREVIEW_TEXT", "DETAIL_TEXT","PROPERTY_*");
+    $arFilter = Array("IBLOCK_ID"=> 35, "ACTIVE_DATE"=>"Y", "ACTIVE"=>"Y");
+    $res = CIBlockElement::GetList(Array(), $arFilter, false, Array("nPageSize"=>50), $arSelect);
+    while($ob = $res->GetNextElement()){
+      $arFields = $ob->GetFields();
+      vd($arFields);
+      $arProps = $ob->GetProperties();
+
+      $arResume = [
+        "title" =>   $arFields["NAME"],
+        "userID" => $arProps["LINK_USER"]["VALUE"],
+        "keyWords" => $arFields["KEY_WORDS"]["VALUE"],
+        "introText" => !empty($arFields["PREVIEW_TEXT"]) ? $arFields["PREVIEW_TEXT"] : $arFields["DETAIL_TEXT"]
+      ];
+
+
+      vd($arProps, true);
+    }
+    ?>
+
+
+
     <section class="no-padding-top bg-alt">
       <div class="container">
         <div class="row">

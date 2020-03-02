@@ -102,7 +102,7 @@ include_once $_SERVER["DOCUMENT_ROOT"]."/bitrix/templates/lpdobra_standart/test2
 
         <div class="radio">
           <input type="radio" name="sortby" id="sortby2" value="option2">
-          <label for="sortby2">Сначала новыеt</label>
+          <label for="sortby2">Сначала новые</label>
         </div>
 
         <div class="radio">

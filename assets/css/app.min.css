@@ -3558,12 +3558,6 @@ a.btn.disabled, fieldset[disabled] a.btn {
   background-color: #fff
 }
 
-.btn-danger {
-  color: #fff;
-  background-color: #d9534f;
-  border-color: #d43f3a
-}
-
 .btn-danger.focus, .btn-danger:focus {
   color: #fff;
   background-color: #c9302c;
@@ -3748,10 +3742,17 @@ tbody.collapse.in {
   padding: 3px 20px;
   clear: both;
   font-weight: 400;
-  line-height: 1.42857143;
   color: #333;
   white-space: nowrap
 }
+
+.bootstrap-select.btn-group .dropdown-menu li a:after {
+  display: block;
+  content: "";
+  float: none;
+  clear: both;
+}
+
 
 .dropdown-menu > li > a:focus, .dropdown-menu > li > a:hover {
   color: #262626;
@@ -4088,7 +4089,6 @@ select[multiple].input-group-sm > .form-control, select[multiple].input-group-sm
 }
 
 .input-group-addon, .input-group-btn {
-  width: 1%;
   white-space: nowrap;
   vertical-align: middle
 }
@@ -4544,7 +4544,6 @@ select[multiple].input-group-sm > .form-control, select[multiple].input-group-sm
     background-image: none
   }
 }
-
 
 .navbar-form {
   padding: 10px 15px;
@@ -12086,11 +12085,6 @@ select.bs-select-hidden, select.selectpicker {
   background-color: #edb96c
 }
 
-.btn-danger {
-  background-color: #ef4d42;
-  border-color: #ef4d42 !important
-}
-
 .btn-danger:active, .btn-danger:active:focus, .btn-danger:focus, .btn-danger:hover {
   color: #fff;
   background-color: #f05a50
@@ -13801,7 +13795,7 @@ dl.icon-holder dd {
   background-attachment: fixed;
   background-size: cover;
   background-repeat: no-repeat;
-  background-color: rgba(41, 170, 254, .8);
+  background-color: #efefef;
   margin: 0;
   padding: 0;
   margin-bottom: 120px;
@@ -14368,11 +14362,11 @@ dl.icon-holder dd {
   position: relative;
   padding: 40px 30px 20px
 }
-
 .item-block .item-form .btn-remove {
   position: absolute;
   top: -12px;
-  right: -10px
+  right: -10px;
+  border-radius: 360px;
 }
 
 .item-block:hover .action-btn {

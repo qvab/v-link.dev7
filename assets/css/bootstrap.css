@@ -1616,15 +1616,12 @@ select.form-control:focus::-ms-value {
   padding-left: 0;
 }
 
-.form-control-sm, .input-group-sm > .form-control,
-.input-group-sm > .input-group-addon,
-.input-group-sm > .input-group-btn > .btn {
+.form-control-sm, .input-group-sm > .form-control, .input-group-sm > .input-group-addon, .input-group-sm > .input-group-btn > .btn {
   padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  border-radius: 0.2rem;
+  font-size: 14px;
+  line-height: 16px;
+  border-radius: 6px;
 }
-
 select.form-control-sm:not([size]):not([multiple]), .input-group-sm > select.form-control:not([size]):not([multiple]),
 .input-group-sm > select.input-group-addon:not([size]):not([multiple]),
 .input-group-sm > .input-group-btn > select.btn:not([size]):not([multiple]) {
@@ -2082,12 +2079,6 @@ fieldset[disabled] a.btn {
   border-color: #d39e00;
 }
 
-.btn-danger {
-  color: #fff;
-  background-color: #dc3545;
-  border-color: #dc3545;
-}
-
 .btn-danger:hover {
   color: #fff;
   background-color: #c82333;
@@ -2497,6 +2488,7 @@ tbody.collapse.show {
   position: relative;
 }
 
+/*
 .dropdown-toggle::after {
   display: inline-block;
   width: 0;
@@ -2508,6 +2500,7 @@ tbody.collapse.show {
   border-right: 0.3em solid transparent;
   border-left: 0.3em solid transparent;
 }
+*/
 
 .dropdown-toggle:empty::after {
   margin-left: 0;
@@ -2533,7 +2526,7 @@ tbody.collapse.show {
   min-width: 10rem;
   padding: 0.5rem 0;
   margin: 0.125rem 0 0;
-  font-size: 1rem;
+  font-size: 13px;
   color: #212529;
   text-align: left;
   list-style: none;
@@ -2590,9 +2583,8 @@ tbody.collapse.show {
 
 .dropdown-header {
   display: block;
-  padding: 0.5rem 1.5rem;
   margin-bottom: 0;
-  font-size: 0.875rem;
+  font-size: 17px;
   color: #868e96;
   white-space: nowrap;
 }
@@ -2809,14 +2801,11 @@ tbody.collapse.show {
   border-radius: 0.25rem;
 }
 
-.input-group-addon.form-control-sm,
-.input-group-sm > .input-group-addon,
-.input-group-sm > .input-group-btn > .input-group-addon.btn {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  border-radius: 0.2rem;
+.input-group-addon.form-control-sm, .input-group-sm > .input-group-addon, .input-group-sm > .input-group-btn > .input-group-addon.btn {
+  padding: 17px 12px;
+  font-size: 15px;
+  border-radius: 6px;
 }
-
 .input-group-addon.form-control-lg,
 .input-group-lg > .input-group-addon,
 .input-group-lg > .input-group-btn > .input-group-addon.btn {
