@@ -25,6 +25,7 @@ class Resume
     $this->req = $_POST["resume"];
     $this->obUser = $USER;
     $this->iblock = new CIBlockElement;
+    $this->cfile = new CFile;
     $this->date = new \Bitrix\Main\Type\DateTime;
   }
 
@@ -56,14 +57,19 @@ class Resume
           "KEY_WORDS" => $this->arGetKeywords,
           "EDUCATIONS" => $this->arAddEducation,
           "PREV_WORKS" => $this->arAddPrevWorks,
+          "CATEGORIES" => $this->req["categories"]
         ],
         "DETAIL_TEXT" => $this->req["description"],
-        "ACTIVE" => "Y",
+        "DETAIL_PICTURE" => $this->cfile->MakeFileArray($this->idFile),
+        "PREVIEW_PICTURE" => $this->cfile->MakeFileArray($this->idFile),
+        "ACTIVE" => "N",
         "IBLOCK_ID" => 35,
       ];
       $el = $this->iblock->Add($arFields);
       if (!empty($el)) {
         return true;
+      } else {
+        return false;
       }
     }
   }
@@ -142,7 +148,6 @@ class Resume
     $this->getKeyWords();
     // Добавляем новые теги
     if (!empty($this->arKeywords)) {
-      vd($this->arKeywords);
       foreach ($this->arKeywords as $nameKey => $v) {
         $arFields = [
           "NAME" => $nameKey,
@@ -250,6 +255,17 @@ while ($section = $res->GetNextElement()) {
     border-radius: 16px;
 ">Резюме успешно добавлено</div>
         <?php
+        } else { ?>
+          <div class="success-resume" style="
+    text-align: center;
+    color: #fff;
+    background-color: #ff7e0.;
+    padding: 25px;
+    /* max-width: 270px; */
+    margin: 0 auto;
+    border-radius: 16px;
+">Произошла ошибка при добавлении</div>
+          <?php
         }
         ?>
       </div>
@@ -275,8 +291,8 @@ while ($section = $res->GetNextElement()) {
 
 
             <div class="form-group">
-              <select class="form-control selectpicker" name="resume[categories]" multiple>
-                <option disabled>Выберите категорию</option>
+              <label>Выберите специализации</label>
+              <select class="form-control selectpicker" name="resume[categories]" data-placeholder="Выберите категорию" multiple>
                 <?php
                 foreach ($arSections as $idSection => $nameSection) { ?>
                   <optgroup label="<?=$nameSection?>">
