@@ -1,145 +1,267 @@
-<?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?>
+<? if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
+CModule::IncludeModule("sale");
+/** @var array $arParams */
+/** @var array $arResult */
+/** @global CMain $APPLICATION */
+/** @global CUser $USER */
+/** @global CDatabase $DB */
+/** @var CBitrixComponentTemplate $this */
+/** @var string $templateName */
+/** @var string $templateFile */
+/** @var string $templateFolder */
+/** @var string $componentPath */
+/** @var CBitrixComponent $component */
+$this->setFrameMode(true);
 
-<?
-use Bitrix\Main\Localization\Loc;
-use Bitrix\Sale\Location;
 
-Loc::loadMessages(__FILE__);
+$locationId = $arResult["PROPERTIES"]["ID_LOCATION"]["VALUE"];
+$sNameLocation = '';
+$arSelectLocation = CSaleLocation::GetByID($locationId);
 
-if ($arParams["UI_FILTER"])
-{
-  $arParams["USE_POPUP"] = true;
+$sNameLocation .= $arSelectLocation["COUNTRY_NAME_ORIG"];
+if ($arSelectLocation["REGION_ID"] == $locationId) {
+  $sNameLocation .= ", ".$arSelectLocation["REGION_NAME_ORIG"];
+} elseif ($arSelectLocation["CITY_ID"] == $locationId) {
+  $sNameLocation .= ", ".$arSelectLocation["CITY_NAME_ORIG"];
 }
 
+function prop($k)
+{
+  global $arResult;
+  return $arResult["PROPERTIES"][$k]["VALUE"];
+}
+
+$arProp = [
+  "user" => CUser::GetByID($arResult["PROPERTIES"]["ID_USER"]["VALUE"])->arResult[0]["NAME"],
+  "location" => $sNameLocation,
+  "payment" => $arResult["PROPERTIES"]["PAYMENT"]["VALUE"],
+  "image" => !empty($arResult["DETAIL_PICTURE"]["SRC"]) ? $arResult["DETAIL_PICTURE"]["SRC"] : ""
+];
+
+//vd($arResult, true);
+$arKeyWords = getKeywordsByIds(prop("KEY_WORDS"));
 ?>
 
-<?if(!empty($arResult['ERRORS']['FATAL'])):?>
-
-  <?foreach($arResult['ERRORS']['FATAL'] as $error):?>
-    <?ShowError($error)?>
-  <?endforeach?>
-
-<?else:?>
-
-  <?CJSCore::Init();?>
-  <?$GLOBALS['APPLICATION']->AddHeadScript('/bitrix/js/sale/core_ui_widget.js')?>
-  <?$GLOBALS['APPLICATION']->AddHeadScript('/bitrix/js/sale/core_ui_etc.js')?>
-  <?$GLOBALS['APPLICATION']->AddHeadScript('/bitrix/js/sale/core_ui_autocomplete.js');?>
-
-  <div id="sls-<?=$arResult['RANDOM_TAG']?>" class="bx-sls form-control <?if(strlen($arResult['MODE_CLASSES'])):?> <?=$arResult['MODE_CLASSES']?><?endif?>">
-
-    <?if(is_array($arResult['DEFAULT_LOCATIONS']) && !empty($arResult['DEFAULT_LOCATIONS'])):?>
-
-      <div class="bx-ui-sls-quick-locations quick-locations">
-
-        <?foreach($arResult['DEFAULT_LOCATIONS'] as $lid => $loc):?>
-          <a href="javascript:void(0)" data-id="<?=intval($loc['ID'])?>" class="quick-location-tag"><?=htmlspecialcharsbx($loc['NAME'])?></a>
-        <?endforeach?>
-
-      </div>
-
-    <?endif?>
-
-    <? $dropDownBlock = $arParams["UI_FILTER"] ? "dropdown-block-ui" : "dropdown-block"; ?>
-    <div style="width: 100%;" class="<?=$dropDownBlock?> bx-ui-sls-input-block">
-
-      <span class="dropdown-icon"></span>
-      <input type="text" autocomplete="off" name="<?=$arParams['INPUT_NAME']?>" value="<?=$arResult['VALUE']?>" class="dropdown-field form-control" placeholder="<?=Loc::getMessage('SALE_SLS_INPUT_SOME')?> ..." />
-
-      <div class="dropdown-fade2white"></div>
-      <div class="bx-ui-sls-loader"></div>
-      <div class="bx-ui-sls-clear" title="<?=Loc::getMessage('SALE_SLS_CLEAR_SELECTION')?>"></div>
-      <div class="bx-ui-sls-pane"></div>
-
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-4">
+      <img src="<?=$arProp["image"]?>" alt="">
     </div>
 
-    <script type="text/html" data-template-id="bx-ui-sls-error">
-      <div class="bx-ui-sls-error">
-        <div></div>
-        {{message}}
+    <div class="col-xs-12 col-sm-8 header-detail">
+      <div class="hgroup">
+        <h1><?=$arResult["NAME"]?></h1>
+        <h3><?=$arProp["user"]?></h3>
       </div>
-    </script>
+      <hr>
+      <p class="lead"><?=$arResult["DETAIL_TEXT"]?></p>
 
-    <script type="text/html" data-template-id="bx-ui-sls-dropdown-item">
-      <div class="dropdown-item bx-ui-sls-variant">
-        <span class="dropdown-item-text">{{display_wrapped}}</span>
-        <?if($arResult['ADMIN_MODE']):?>
-          [{{id}}]
-        <?endif?>
+      <ul class="details cols-2">
+        <li>
+          <i class="fa fa-map-marker"></i>
+          <span><?=$arProp["location"]?></span>
+        </li>
+
+        <li>
+          <i class="fa fa-globe"></i>
+          <a href="#"><?=prop("EMAIL")?></a>
+        </li>
+
+        <li>
+          <i class="fa fa-money"></i>
+          <span><?=number_format($arProp["payment"], 0, ".", " ")?> руб. / мес.</span>
+        </li>
+
+        <li>
+          <i class="fa fa-birthday-cake"></i>
+          <span>26 лет</span>
+        </li>
+
+        <li>
+          <i class="fa fa-phone"></i>
+          <span><?=prop("PHONE")?></span>
+        </li>
+
+        <li>
+          <i class="fa fa-envelope"></i>
+          <a href="#"><?=prop("EMAIL")?></a>
+        </li>
+      </ul>
+
+      <div class="tag-list">
+        <?php foreach ($arKeyWords as $sName) {
+          echo "<span>".$sName."</span>";
+        } ?>
       </div>
-    </script>
-
-    <div class="bx-ui-sls-error-message">
-      <?if(!$arParams['SUPPRESS_ERRORS']):?>
-        <?if(!empty($arResult['ERRORS']['NONFATAL'])):?>
-
-          <?foreach($arResult['ERRORS']['NONFATAL'] as $error):?>
-            <?ShowError($error)?>
-          <?endforeach?>
-
-        <?endif?>
-      <?endif?>
     </div>
-
   </div>
 
-  <script>
+  <div class="button-group">
+    <div class="action-buttons">
+      <a class="btn btn-success" href="#get-contact">Получить контакт</a>
+    </div>
+  </div>
+</div>
+</header>
+<!-- END Page header -->
 
-    if (!window.BX && top.BX)
-      window.BX = top.BX;
 
-    <?if(strlen($arParams['JS_CONTROL_DEFERRED_INIT'])):?>
-    if(typeof window.BX.locationsDeferred == 'undefined') window.BX.locationsDeferred = {};
-    window.BX.locationsDeferred['<?=$arParams['JS_CONTROL_DEFERRED_INIT']?>'] = function(){
-      <?endif?>
+<!-- Main container -->
+<main>
 
-      <?if(strlen($arParams['JS_CONTROL_GLOBAL_ID'])):?>
-      if(typeof window.BX.locationSelectors == 'undefined') window.BX.locationSelectors = {};
-      window.BX.locationSelectors['<?=$arParams['JS_CONTROL_GLOBAL_ID']?>'] =
-      <?endif?>
 
-        new BX.Sale.component.location.selector.search(<?=CUtil::PhpToJSObject(array(
+  <!-- Education -->
+  <section>
+    <div class="container">
 
-          // common
-          'scope' => 'sls-'.$arResult['RANDOM_TAG'],
-          'source' => $this->__component->getPath().'/get.php',
-          'query' => array(
-            'FILTER' => array(
-              'EXCLUDE_ID' => intval($arParams['EXCLUDE_SUBTREE']),
-              'SITE_ID' => $arParams['FILTER_BY_SITE'] && !empty($arParams['FILTER_SITE_ID']) ? $arParams['FILTER_SITE_ID'] : ''
-            ),
-            'BEHAVIOUR' => array(
-              'SEARCH_BY_PRIMARY' => $arParams['SEARCH_BY_PRIMARY'] ? '1' : '0',
-              'LANGUAGE_ID' => LANGUAGE_ID
-            ),
-          ),
+      <header class="section-header">
+        <h2>Образование</h2>
+      </header>
 
-          'selectedItem' => !empty($arResult['LOCATION']) ? $arResult['LOCATION']['VALUE'] : false,
-          'knownItems' => $arResult['KNOWN_ITEMS'],
-          'provideLinkBy' => $arParams['PROVIDE_LINK_BY'],
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="item-block">
+            <header>
+              <img src="assets/img/logo-mit.png" alt="">
+              <div class="hgroup">
+                <h4>Master
+                  <small>Computer Science</small>
+                </h4>
+                <h5>Massachusetts Institute of Technology</h5>
+              </div>
+              <h6 class="time">2012 - 2014</h6>
+            </header>
+            <div class="item-body">
+              <p>The Massachusetts Institute of Technology (MIT) is a private research university in Cambridge,
+                Massachusetts. Founded in 1861 in response to the increasing industrialization of the United States, MIT
+                adopted a European polytechnic university model and stressed laboratory instruction in applied science
+                and engineering.</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          'messages' => array(
-            'nothingFound' => Loc::getMessage('SALE_SLS_NOTHING_FOUND'),
-            'error' => Loc::getMessage('SALE_SLS_ERROR_OCCURED'),
-          ),
+    </div>
+  </section>
+  <!-- END Education -->
 
-          // "js logic"-related part
-          'callback' => $arParams['JS_CALLBACK'],
-          'useSpawn' => $arParams['USE_JS_SPAWN'] == 'Y',
-          'usePopup' => ($arParams["USE_POPUP"] ? true : false),
-          'initializeByGlobalEvent' => $arParams['INITIALIZE_BY_GLOBAL_EVENT'],
-          'globalEventScope' => $arParams['GLOBAL_EVENT_SCOPE'],
 
-          // specific
-          'pathNames' => $arResult['PATH_NAMES'], // deprecated
-          'types' => $arResult['TYPES'],
+  <!-- Work Experience -->
+  <section class="bg-alt">
+    <div class="container">
+      <header class="section-header">
+        <h2>Последнее места работы</h2>
+      </header>
 
-        ), false, false, true)?>);
+      <div class="row">
 
-      <?if(strlen($arParams['JS_CONTROL_DEFERRED_INIT'])):?>
-    };
-    <?endif?>
+        <!-- Work item -->
+        <div class="col-xs-12">
+          <div class="item-block">
+            <header>
+              <img src="assets/img/logo-envato.png" alt="">
+              <div class="hgroup">
+                <h4>Envato</h4>
+                <h5>Quality assurance engineer</h5>
+              </div>
+              <h6 class="time">Mar 2012 - Jun 2014</h6>
+            </header>
+            <div class="item-body">
+              <p>Responsibilities:</p>
+              <ul>
+                <li>Software testing in a Web Applications/Mobile environment.</li>
+                <li>Software Test Plans from Business Requirement Specifications for test engineering group.</li>
+                <li>Run production tests as part of software implementation; Create, deliver and support test plans for
+                  testing group to execute.
+                </li>
+                <li>Software testing in a Web Applications environment.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <!-- END Work item -->
 
-  </script>
 
-<?endif?>
+      </div>
+
+    </div>
+  </section>
+  <!-- END Work Experience -->
+
+
+  <!-- Skills -->
+  <section>
+    <div class="container">
+      <header class="section-header">
+        <h2>Уровень навыков</h2>
+      </header>
+
+      <br>
+      <ul class="skills cols-3">
+        <li>
+          <div>
+            <span class="skill-name">HTML</span>
+            <span class="skill-value">100%</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" style="width: 100%;"></div>
+          </div>
+        </li>
+
+        <li>
+          <div>
+            <span class="skill-name">CSS</span>
+            <span class="skill-value">95%</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" style="width: 95%;"></div>
+          </div>
+        </li>
+
+        <li>
+          <div>
+            <span class="skill-name">Javascript</span>
+            <span class="skill-value">80%</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" style="width: 80%;"></div>
+          </div>
+        </li>
+
+        <li>
+          <div>
+            <span class="skill-name">Photoshop</span>
+            <span class="skill-value">60%</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" style="width: 60%;"></div>
+          </div>
+        </li>
+
+        <li>
+          <div>
+            <span class="skill-name">ReactJS</span>
+            <span class="skill-value">70%</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" style="width: 70%;"></div>
+          </div>
+        </li>
+
+        <li>
+          <div>
+            <span class="skill-name">Team work</span>
+            <span class="skill-value">90%</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" style="width: 90%;"></div>
+          </div>
+        </li>
+      </ul>
+
+    </div>
+  </section>
+  <!-- END Skills -->
+
+
+</main>

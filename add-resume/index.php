@@ -139,6 +139,24 @@ class Resume
     }
   }
 
+
+
+  /**
+   * Загрузка файла аватара
+   */
+  private function uploadFile()
+  {
+    if (!empty($_FILES)) {
+      $arImage = [
+        "name" => $_FILES["resume"]["name"]["file"],
+        "size" => $_FILES["resume"]["size"]["file"],
+        "tmp_name" => $_FILES["resume"]["tmp_name"]["file"],
+        "type" => $_FILES["resume"]["type"]["file"],
+      ];
+      $this->idFile = CFile::SaveFile($arImage, "vacancy_avatars");
+    }
+  }
+
   /**
    * Добавляем ключевые слова
    */
@@ -157,22 +175,6 @@ class Resume
         $el = $this->iblock->Add($arFields);
         $this->arGetKeywords[] = $el;
       }
-    }
-  }
-
-  /**
-   * Загрузка файла аватара
-   */
-  private function uploadFile()
-  {
-    if (!empty($_FILES)) {
-      $arImage = [
-        "name" => $_FILES["resume"]["name"]["file"],
-        "size" => $_FILES["resume"]["size"]["file"],
-        "tmp_name" => $_FILES["resume"]["tmp_name"]["file"],
-        "type" => $_FILES["resume"]["type"]["file"],
-      ];
-      $this->idFile = CFile::SaveFile($arImage, "vacancy_avatars");
     }
   }
 
@@ -274,7 +276,7 @@ while ($section = $res->GetNextElement()) {
         <div class="row">
           <div class="col-xs-12 col-sm-4">
             <div class="form-group">
-              <input type="file" name="resume[file]" class="dropify" data-default-file="/assets/img/avatar.jpg">
+              <input type="file" name="resume[file]" class="dropify" data-default-file="/assets/img/logo-default.png">
               <span class="help-block">Заргузите фотографию</span>
             </div>
           </div>
