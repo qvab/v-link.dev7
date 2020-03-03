@@ -1,6 +1,6 @@
 <?
-$sSectionName = "О компании";
+$sSectionName = "Добавить резюме";
 $arDirProperties = Array(
-   "title" => "О компании"
+   "title" => "Добавить резюме"
 );
 ?>

@@ -11,7 +11,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); ?>
         <div class="banner-content col-lg-12 col-md-12">
           <h1 class="text-uppercase">Профессильнальный сайт работы</h1>
           <div class="search-field">
-            <form class="search-form" action="#">
+            <form class="search-form" action="/vacancy" method="get">
               <div class="row">
                 <div class="col-lg-12 d-flex align-items-center justify-content-center toggle-wrap">
                   <div class="row">
@@ -20,7 +20,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); ?>
                     </div>
                     <div class="col">
                       <div class="onoffswitch3 d-block mx-auto">
-                        <input type="checkbox" name="onoffswitch3" class="onoffswitch3-checkbox"
+                        <input type="checkbox" name="vacancy" class="onoffswitch3-checkbox"
                                id="myonoffswitch3" checked>
                         <label class="onoffswitch3-label" for="myonoffswitch3">
                           <span class="onoffswitch3-inner">
@@ -42,20 +42,27 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); ?>
                   <input type="text" name="search-key" placeholder="Введите включевые слова профессии" class="input-group form-control" />
                 </div>
                 <div class="col-lg-4 col-md-6 col-xs-6">
-                  <select name="property-type" class="app-select form-control" required>
-                    <option data-display="Город">Регион поиска</option>
-                    <option value="1">Property type 1</option>
-                    <option value="2">Property type 2</option>
-                    <option value="3">Property type 3</option>
-                  </select>
+                  <? $APPLICATION->IncludeComponent(
+                    "bitrix:sale.location.selector.search",
+                    "",
+                    Array(
+                      "CACHE_TIME" => "36000000",
+                      "CACHE_TYPE" => "A",
+                      "FILTER_BY_SITE" => "N",
+                      "INITIALIZE_BY_GLOBAL_EVENT" => "",
+                      "INPUT_NAME" => "region",
+                      "JS_CALLBACK" => "",
+                      "JS_CONTROL_GLOBAL_ID" => "",
+                      "PROVIDE_LINK_BY" => "id",
+                      "SHOW_DEFAULT_LOCATIONS" => "N",
+                      "SUPPRESS_ERRORS" => "N"
+                    )
+                  ); ?>
                 </div>
-                <div class="col-lg-4 range-wrap">
-                  <p>Уровень З\П (руб\мес.):</p>
-                  <input type="text" id="range" value="" name="range"/>
-                </div>
-                <div class="col-lg-4 range-wrap">
-                  <p>Требуемй стаж (лет):</p>
-                  <input type="text" id="range2" value="" name="range"/>
+
+                <div class="col-lg-8 range-wrap">
+                  <p style="text-align: center;">Зарабатная плата (руб\мес.):</p>
+                  <input type="text" id="range" value="" name="payment"/>
                 </div>
                 <div class="col-lg-4 d-flex justify-content-end">
                   <button class="primary-btn mt-50" style="height: 45px;">Поиск<span

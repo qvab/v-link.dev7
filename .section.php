@@ -1,8 +1,9 @@
 <?
 $sSectionName = "Главная";
-$arDirProperties = array(
+$arDirProperties = Array(
    "description" => "Немного доброты в вашем мире принесет эта страница, концептуальность и покой создавая.",
    "keywords" => "добро, сайт, посадочная страница",
-   "robots" => "index, follow"
+   "title" => "Главная",
+   "ROBOTS" => "index, follow"
 );
 ?>
