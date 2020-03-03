@@ -1,33 +1,41 @@
 <?
 define("HIDE_HEADER", true);
-require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/header.php");
+require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 $APPLICATION->SetTitle("О компании"); ?>
 <?php
 global $USER;
-
-vd($_POST, true);
-
 
 class Resume
 {
 
   private
     $arKeywords = [],
+    $arGetKeywords = [],
     $arErrors = [],
     $arEducation = [],
+    $arPrevWorks = [],
+    $arAddEducation = [],
+    $arAddPrevWorks = [],
     $obUser,
+    $idFile,
     $req;
 
   function __construct($USER)
   {
     $this->req = $_POST["resume"];
     $this->obUser = $USER;
+    $this->iblock = new CIBlockElement;
+    $this->date = new \Bitrix\Main\Type\DateTime;
   }
 
 
   public function init()
   {
     $this->addEducation();
+    $this->addPrevWorks();
+    $this->uploadFile();
+    $this->addKeyWords();
+    return $res = $this->addResume();
   }
 
   /**
@@ -35,8 +43,29 @@ class Resume
    */
   private function addResume()
   {
-
-
+    if (!empty($this->req["citi"])) {
+      $arFields = [
+        "NAME" => $this->req["title"],
+        "PROPERTY_VALUES" => [
+          "ID_USER" => (int)$this->obUser->GetID(),
+          "ID_LOCATION" => (int)$this->req["citi"],
+          "PAYMENT" => (int)$this->req["finance"],
+          "HAPPY_DAY" => $this->date->add($this->req["happy_day"]),
+          "PHONE" => $this->req["phone_number"],
+          "EMAIL" => $this->req["email"],
+          "KEY_WORDS" => $this->arGetKeywords,
+          "EDUCATIONS" => $this->arAddEducation,
+          "PREV_WORKS" => $this->arAddPrevWorks,
+        ],
+        "DETAIL_TEXT" => $this->req["description"],
+        "ACTIVE" => "Y",
+        "IBLOCK_ID" => 35,
+      ];
+      $el = $this->iblock->Add($arFields);
+      if (!empty($el)) {
+        return true;
+      }
+    }
   }
 
   /**
@@ -44,7 +73,30 @@ class Resume
    */
   private function addPrevWorks()
   {
-
+    if (!empty($this->req["works"])) {
+      foreach ($this->req["works"]["name_company"] as $k => $educationLevel) {
+        if (!empty($educationLevel)) {
+          $this->arPrevWorks[$k] = [
+            "NAME" => $this->obUser->GetLogin()." (".$this->obUser->GetID().") ".$this->req["works"]["name_company"][$k],
+            "PROPERTY_VALUES" => [
+              "ID_USER" => $this->obUser->GetID(),
+              "LOCATION" => $this->req["works"]["location"][$k],
+              "DATE_START" => $this->date->add($this->req["works"]["date_start"][$k]),
+              "DATE_END" => $this->date->add($this->req["works"]["date_end"][$k])
+            ],
+            "DETAIL_TEXT" => $this->req["works"]["description"][$k],
+            "ACTIVE" => "Y",
+            "IBLOCK_ID" => 39,
+          ];
+        }
+      }
+      if (!empty($this->arPrevWorks)) {
+        foreach ($this->arPrevWorks as $arFields) {
+          $el = $this->iblock->Add($arFields);
+          $this->arAddPrevWorks[] = $el;
+        }
+      }
+    }
 
   }
 
@@ -58,22 +110,27 @@ class Resume
       foreach ($this->req["education"]["level"] as $k => $educationLevel) {
         if (!empty($educationLevel)) {
           $this->arEducation[$k] = [
-            "NAME" => $this->obUser->GetLogin() . " " . $this->req["education"]["name"][$k],
+            "NAME" => $this->obUser->GetLogin()." (".$this->obUser->GetID().") ".$this->req["education"]["name"][$k],
             "PROPERTY_VALUES" => [
               "ID_USER" => $this->obUser->GetID(),
               "LEVEL" => $this->req["education"]["level"][$k],
               "SPECIAL" => $this->req["education"]["special"][$k],
-              "DATE_START" => $this->req["education"]["date_start"][$k],
-              "DATE_END" => $this->req["education"]["date_end"][$k],
+              "DATE_START" => $this->date->add($this->req["education"]["date_start"][$k]),
+              "DATE_END" => $this->date->add($this->req["education"]["date_end"][$k])
             ],
-            "DESCRIPTION" => $this->req["education"]["description"][$k]
+            "DETAIL_TEXT" => $this->req["education"]["description"][$k],
+            "ACTIVE" => "Y",
+            "IBLOCK_ID" => 38,
           ];
         }
       }
-    } else {
-      echo "education null";
+      if (!empty($this->arEducation)) {
+        foreach ($this->arEducation as $arFields) {
+          $el = $this->iblock->Add($arFields);
+          $this->arAddEducation[] = $el;
+        }
+      }
     }
-
   }
 
   /**
@@ -82,7 +139,20 @@ class Resume
   private function addKeyWords()
   {
 
-
+    $this->getKeyWords();
+    // Добавляем новые теги
+    if (!empty($this->arKeywords)) {
+      vd($this->arKeywords);
+      foreach ($this->arKeywords as $nameKey => $v) {
+        $arFields = [
+          "NAME" => $nameKey,
+          "ACTIVE" => "Y",
+          "IBLOCK_ID" => 40,
+        ];
+        $el = $this->iblock->Add($arFields);
+        $this->arGetKeywords[] = $el;
+      }
+    }
   }
 
   /**
@@ -90,8 +160,15 @@ class Resume
    */
   private function uploadFile()
   {
-
-    vd($_FILES, true);
+    if (!empty($_FILES)) {
+      $arImage = [
+        "name" => $_FILES["resume"]["name"]["file"],
+        "size" => $_FILES["resume"]["size"]["file"],
+        "tmp_name" => $_FILES["resume"]["tmp_name"]["file"],
+        "type" => $_FILES["resume"]["type"]["file"],
+      ];
+      $this->idFile = CFile::SaveFile($arImage, "vacancy_avatars");
+    }
   }
 
   /**
@@ -99,36 +176,42 @@ class Resume
    */
   private function getKeyWords()
   {
-    if (!empty($_POST["keywords"])) {
-      $this->arKeywords = explode(",", $_POST["keywords"]);
-    }
-    $res = CIBlockElement::GetList(
-      [],
-      [
-        "IBLOCK_ID" => 40,
-        "NAME" => $this->arKeywords
-      ],
-      false,
-      ["nPageSize" => 999],
-      ["ID", "IBLOCK_SECTION_ID", "NAME"]
-    );
-    while ($ob = $res->GetNextElement()) {
-      $arFields = $ob->GetFields();
-      $arCategories[$arFields["IBLOCK_SECTION_ID"]][$arFields["ID"]] = $arFields["NAME"];
+    if (!empty($this->req["keywords"])) {
+      $arKeys = explode(",", $this->req["keywords"]);
+      foreach ($arKeys as $v) {
+        if (!empty($v)) {
+          $this->arKeywords[$v] = false;
+          $arSearch[] = $v;
+        }
+      }
+      $res = CIBlockElement::GetList(
+        [],
+        [
+          "IBLOCK_ID" => 40,
+          "NAME" => $arSearch
+        ],
+        false,
+        ["nPageSize" => 999],
+        ["ID", "NAME"]
+      );
+      while ($ob = $res->GetNextElement()) {
+        $arFields = $ob->GetFields();
+        $this->arGetKeywords[] = $arFields["ID"];
+        unset($this->arKeywords[$arFields["NAME"]]);
+      }
     }
   }
 }
 
 
 $obResume = new Resume($USER);
-$obResume->init();
+$addResume = $obResume->init();
 
 /********************** добавление резюме **********************/
 
 
 $arCategories = [];
 $arSections = [];
-
 $arSelect = ["ID", "IBLOCK_SECTION_ID", "NAME"];
 $arFilter = ["IBLOCK_ID" => 41];
 $res = CIBlockElement::GetList(Array(), $arFilter, false, Array("nPageSize" => 999), $arSelect);
@@ -156,6 +239,19 @@ while ($section = $res->GetNextElement()) {
       <div class="container page-name">
         <h1 class="text-center">Добавить новое резюме</h1>
         <p class="lead text-center" style="color: #666;">Для добавление нового резюме, заполните формы ниже</p>
+        <?php if (!empty($addResume)) { ?>
+          <div class="success-resume" style="
+    text-align: center;
+    color: #fff;
+    background-color: #30AB1E;
+    padding: 25px;
+    /* max-width: 270px; */
+    margin: 0 auto;
+    border-radius: 16px;
+">Резюме успешно добавлено</div>
+        <?php
+        }
+        ?>
       </div>
 
       <div class="container">
@@ -179,14 +275,14 @@ while ($section = $res->GetNextElement()) {
 
 
             <div class="form-group">
-              <select class="form-control selectpicker" name="resume[category]" multiple>
-                <option selected disabled>Выберите категорию</option>
+              <select class="form-control selectpicker" name="resume[categories]" multiple>
+                <option disabled>Выберите категорию</option>
                 <?php
                 foreach ($arSections as $idSection => $nameSection) { ?>
-                  <optgroup label="<?= $nameSection ?>">
+                  <optgroup label="<?=$nameSection?>">
                     <?php
                     foreach ($arCategories[$idSection] as $idCategory => $nameCategory) { ?>
-                      <option value="<?= $idCategory ?>"><?= $nameCategory ?></option>
+                      <option value="<?=$idCategory?>"><?=$nameCategory?></option>
                       <?php
                     }
                     ?>
@@ -196,8 +292,6 @@ while ($section = $res->GetNextElement()) {
                 ?>
               </select>
             </div>
-
-
             <div class="form-group">
               <textarea class="form-control" rows="3" placeholder="Расскажите о себе"
                         name="resume[description]"></textarea>
@@ -275,10 +369,8 @@ while ($section = $res->GetNextElement()) {
             <h6 style="color: #333;">Ключевые слова, навыки, специализации</h6>
             <div class="form-group">
               <input type="text" value="" data-role="tagsinput" placeholder="Введите название" name="resume[keywords]">
-              <span
-                  class="help-block">Укажите ключевое слово которое соотвествует вашей специлизации (и нажмите Enter)</span>
+              <span class="help-block">Укажите ключевое слово которое соотвествует вашей специлизации (и нажмите Enter)</span>
             </div>
-
           </div>
         </div>
       </div>
@@ -679,4 +771,4 @@ while ($section = $res->GetNextElement()) {
     $.datetimepicker.setLocale('ru');
   </script>
 
-<? require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/footer.php"); ?>
+<? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php"); ?>
