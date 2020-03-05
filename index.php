@@ -20,7 +20,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); ?>
                     </div>
                     <div class="col">
                       <div class="onoffswitch3 d-block mx-auto">
-                        <input type="checkbox" name="vacancy" class="onoffswitch3-checkbox"
+                        <input type="checkbox" name="search[type]" class="onoffswitch3-checkbox"
                                id="myonoffswitch3" checked>
                         <label class="onoffswitch3-label" for="myonoffswitch3">
                           <span class="onoffswitch3-inner">
@@ -39,7 +39,9 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); ?>
                   </div>
                 </div>
                 <div class="col-lg-8 col-md-6 col-xs-6">
-                  <input type="text" name="search-key" placeholder="Введите включевые слова профессии" class="input-group form-control" />
+                  <input type="text" name="search[key]" id="search-key" placeholder="Введите включевые слова профессии" class="input-group form-control" />
+                  <input type="hidden" name="search[typekey]" value="" />
+                  <div id="result-search-key"></div>
                 </div>
                 <div class="col-lg-4 col-md-6 col-xs-6">
                   <? $APPLICATION->IncludeComponent(
@@ -62,7 +64,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); ?>
 
                 <div class="col-lg-8 range-wrap">
                   <p style="text-align: center;">Зарабатная плата (руб\мес.):</p>
-                  <input type="text" id="range" value="" name="payment"/>
+                  <input type="text" id="range" value="" name="search[payment]"/>
                 </div>
                 <div class="col-lg-4 d-flex justify-content-end">
                   <button class="primary-btn mt-50" style="height: 45px;">Поиск<span
@@ -78,159 +80,29 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); ?>
   <!-- End banner Area -->
 
   <!-- Start service Area -->
-  <section class="service-area section-gap" id="service">
-    <div class="container">
-      <div class="row d-flex justify-content-center">
-        <div class="col-md-8 pb-40 header-text">
-          <h1>Преимущества нашей компании</h1>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-lg-4 col-md-6 pb-30">
-          <div class="single-service">
-            <h4><span class="lnr lnr-user"></span>Название блока</h4>
-            <p>
-              Краткое содержание блока описание Преимущества
-            </p>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6 pb-30">
-          <div class="single-service">
-            <h4><span class="lnr lnr-user"></span>Название блока</h4>
-            <p>
-              Краткое содержание блока описание Преимущества
-            </p>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6 pb-30">
-          <div class="single-service">
-            <h4><span class="lnr lnr-user"></span>Название блока</h4>
-            <p>
-              Краткое содержание блока описание Преимущества
-            </p>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="single-service">
-            <h4><span class="lnr lnr-user"></span>Название блока</h4>
-            <p>
-              Краткое содержание блока описание Преимущества
-            </p>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="single-service">
-            <h4><span class="lnr lnr-user"></span>Название блока</h4>
-            <p>
-              Краткое содержание блока описание Преимущества
-            </p>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="single-service">
-            <h4><span class="lnr lnr-user"></span>Название блока</h4>
-            <p>
-              Краткое содержание блока описание Преимущества
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+<?$APPLICATION->IncludeComponent(
+  "bitrix:main.include",
+  "",
+  Array(
+    "AREA_FILE_SHOW" => "file",
+    "AREA_FILE_SUFFIX" => "",
+    "EDIT_TEMPLATE" => "",
+    "PATH" => "/include/area/index_block_advantages.php"
+  )
+);?>
   <!-- End service Area -->
 
   <!-- Start property Area -->
-  <section class="property-area section-gap relative" id="property">
-    <div class="overlay overlay-bg"></div>
-    <div class="container">
-      <div class="row d-flex justify-content-center">
-        <div class="col-md-8 pb-40 header-text">
-          <h1>Самые популярные вакансии на сегодня</h1>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-lg-4">
-          <div class="single-property">
-            <div class="images">
-              <img class="img-fluid mx-auto d-block" src="img/s1.jpg" alt="">
-              <a href="<?=TEMPLATE?>page.detail_vacancy.php"><span>Подробнее</span></a>
-            </div>
-
-            <div class="desc">
-              <div class="top d-flex justify-content-between">
-                <h4><a href="<?=TEMPLATE?>page.detail_vacancy.php">Водитель экспедитор</a></h4>
-              </div>
-              <div class="top d-flex justify-content-between">
-                <h4>30000 - 40000 руб</h4>
-              </div>
-              <div class="middle">
-                <div class="d-flex justify-content-start">
-                  <p>Стаж: от 5 лет</p>
-                  <p>Регион: Самарская обл.</p>
-                </div>
-                <div class="d-flex justify-content-start">
-                  <p>Организация: <span class="gr">citilink</span></p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="single-property">
-            <div class="images">
-              <img class="img-fluid mx-auto d-block" src="img/s1.jpg" alt="">
-              <a href="<?=TEMPLATE?>page.detail_vacancy.php"><span>Подробнее</span></a>
-            </div>
-
-            <div class="desc">
-              <div class="top d-flex justify-content-between">
-                <h4><a href="<?=TEMPLATE?>page.detail_vacancy.php">Водитель экспедитор</a></h4>
-              </div>
-              <div class="top d-flex justify-content-between">
-                <h4>30000 - 40000 руб</h4>
-              </div>
-              <div class="middle">
-                <div class="d-flex justify-content-start">
-                  <p>Стаж: от 5 лет</p>
-                  <p>Регион: Самарская обл.</p>
-                </div>
-                <div class="d-flex justify-content-start">
-                  <p>Организация: <span class="gr">citilink</span></p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="single-property">
-            <div class="images">
-              <img class="img-fluid mx-auto d-block" src="img/s1.jpg" alt="">
-              <a href="<?=TEMPLATE?>page.detail_vacancy.php"><span>Подробнее</span></a>
-            </div>
-
-            <div class="desc">
-              <div class="top d-flex justify-content-between">
-                <h4><a href="<?=TEMPLATE?>page.detail_vacancy.php">Водитель экспедитор</a></h4>
-              </div>
-              <div class="top d-flex justify-content-between">
-                <h4>30000 - 40000 руб</h4>
-              </div>
-              <div class="middle">
-                <div class="d-flex justify-content-start">
-                  <p>Стаж: от 5 лет</p>
-                  <p>Регион: Самарская обл.</p>
-                </div>
-                <div class="d-flex justify-content-start">
-                  <p>Организация: <span class="gr">citilink</span></p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
+<?$APPLICATION->IncludeComponent(
+  "bitrix:main.include",
+  "",
+  Array(
+    "AREA_FILE_SHOW" => "file",
+    "AREA_FILE_SUFFIX" => "",
+    "EDIT_TEMPLATE" => "",
+    "PATH" => "/include/area/index_popular_vacancy.php"
+  )
+);?>
   <!-- End property Area -->
 
   <!-- Start city Area -->
@@ -298,19 +170,16 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); ?>
     <div class="container-fluid">
       <div class="row d-flex justify-content-end align-items-center">
         <div class="col-lg-6 about-left">
-          <div class="single-about pb-30">
-            <h4>Почему выбирают нас</h4>
-            <p>Какой-то текст описания данного блока, не особо длинный, но лаконичный и понятный</p>
-          </div>
-          <div class="single-about pb-30">
-            <h4>Высокий профессионализм</h4>
-            <p>Какой-то текст описания данного блока, не особо длинный, но лаконичный и понятный</p>
-          </div>
-          <div class="single-about">
-            <h4>Точность действий</h4>
-            <p>Какой-то текст описания данного блока, не особо длинный, но лаконичный и понятный</p>
-          </div>
-        </div>
+          <?$APPLICATION->IncludeComponent(
+            "bitrix:main.include",
+            "",
+            Array(
+              "AREA_FILE_SHOW" => "file",
+              "AREA_FILE_SUFFIX" => "",
+              "EDIT_TEMPLATE" => "",
+              "PATH" => "/include/area/index_block_text_for_photo.php"
+            )
+          );?>
         <div class="col-lg-6 about-right no-padding">
           <img class="img-fluid" src="img/about-img.jpg" alt="">
         </div>
@@ -319,42 +188,19 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); ?>
   </section>
   <!-- End About Area -->
 
-  <!-- Start contact-info Area -->
-  <section class="contact-info-area section-gap">
-    <div class="container">
-      <div class="row">
-        <div class="single-info col-lg-3 col-md-6">
-          <h4>Вы можете приехать к нам в офис</h4>
-          <p>
-            Россия, г. Самара, тестовый адрес
-          </p>
-        </div>
-        <div class="single-info col-lg-3 col-md-6">
-          <h4>Позвонить<br />нам</h4>
-          <p>
-            8 800 456-98-78<br>8 495 666-78-98<br>
-          </p>
-        </div>
-        <div class="single-info col-lg-3 col-md-6">
-          <h4>Написать нам<br />на почту</h4>
-          <p>
-            hello@aupcontrol.ru <br>
-            mainhelpinfo@aupcontrol.ru <br>
-            infohelp@aupcontrol.ru
-          </p>
-        </div>
-        <div class="single-info col-lg-3 col-md-6">
-          <h4>Получить<br />тех.поддержку</h4>
-          <p>
-            support@aupcontrol.ru <br>
-            emergencysupp@aupcontrol.ru <br>
-            extremesupp@aupcontrol.ru
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- End contact-info Area -->
+
+<?$APPLICATION->IncludeComponent(
+  "bitrix:main.include",
+  "",
+  Array(
+    "AREA_FILE_SHOW" => "file",
+    "AREA_FILE_SUFFIX" => "",
+    "EDIT_TEMPLATE" => "",
+    "PATH" => "/include/area/index_block_contacts_footer.php"
+  )
+);?>
+
+
 
 <?php require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php"); ?>
 
@@ -362,13 +208,15 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"
         integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4"
         crossorigin="anonymous"></script>
-<script type="text/javascript"
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBhOdIF3Y9382fqJYt5I_sswSrEw5eihAA"></script>
 <script src="lpdobra_standart/js/vendor/bootstrap.min.js"></script>
 <script src="lpdobra_standart/js/jquery.ajaxchimp.min.js"></script>
 <script src="lpdobra_standart/js/jquery.nice-select.min.js"></script>
 <script src="lpdobra_standart/js/jquery.sticky.js"></script>
-<script src="lpdobra_standart/js/ion.rangeSlider.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script src="lpdobra_standart/js/jquery.magnific-popup.min.js"></script>
 <script src="lpdobra_standart/js/main.js"></script>
+<script src="/assets/js/ion.rangeSlider.js"></script>
+<script src="/assets/js/core_rv.js"></script>
+<script>
+  RV.searchKey("#search-key", "#result-search-key");
+</script>

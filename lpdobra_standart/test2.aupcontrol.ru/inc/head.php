@@ -9,7 +9,7 @@ define("IS_ROSVAKANT", true);
 
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <link rel="shortcut icon" href="<?=TEMPLATE?>img/fav.png">
+  <link rel="shortcut icon" href="/favicon.png">
   <meta name="author" content="CodePixar">
   <meta name="description" content="">
   <meta name="keywords" content="">

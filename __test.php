@@ -1,5 +1,4 @@
 <? if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
-CModule::IncludeModule("sale");
 /** @var array $arParams */
 /** @var array $arResult */
 /** @global CMain $APPLICATION */
@@ -12,256 +11,107 @@ CModule::IncludeModule("sale");
 /** @var string $componentPath */
 /** @var CBitrixComponent $component */
 $this->setFrameMode(true);
-
-
-$locationId = $arResult["PROPERTIES"]["ID_LOCATION"]["VALUE"];
-$sNameLocation = '';
-$arSelectLocation = CSaleLocation::GetByID($locationId);
-
-$sNameLocation .= $arSelectLocation["COUNTRY_NAME_ORIG"];
-if ($arSelectLocation["REGION_ID"] == $locationId) {
-  $sNameLocation .= ", ".$arSelectLocation["REGION_NAME_ORIG"];
-} elseif ($arSelectLocation["CITY_ID"] == $locationId) {
-  $sNameLocation .= ", ".$arSelectLocation["CITY_NAME_ORIG"];
-}
-
-function prop($k)
-{
-  global $arResult;
-  return $arResult["PROPERTIES"][$k]["VALUE"];
-}
-
-$arProp = [
-  "user" => CUser::GetByID($arResult["PROPERTIES"]["ID_USER"]["VALUE"])->arResult[0]["NAME"],
-  "location" => $sNameLocation,
-  "payment" => $arResult["PROPERTIES"]["PAYMENT"]["VALUE"],
-  "image" => !empty($arResult["DETAIL_PICTURE"]["SRC"]) ? $arResult["DETAIL_PICTURE"]["SRC"] : ""
-];
-
-//vd($arResult, true);
-$arKeyWords = getKeywordsByIds(prop("KEY_WORDS"));
+CModule::IncludeModule("sale");
 ?>
 
-<div class="container">
-  <div class="row">
-    <div class="col-xs-12 col-sm-4">
-      <img src="<?=$arProp["image"]?>" alt="">
-    </div>
-
-    <div class="col-xs-12 col-sm-8 header-detail">
-      <div class="hgroup">
-        <h1><?=$arResult["NAME"]?></h1>
-        <h3><?=$arProp["user"]?></h3>
-      </div>
-      <hr>
-      <p class="lead"><?=$arResult["DETAIL_TEXT"]?></p>
-
-      <ul class="details cols-2">
-        <li>
-          <i class="fa fa-map-marker"></i>
-          <span><?=$arProp["location"]?></span>
-        </li>
-
-        <li>
-          <i class="fa fa-globe"></i>
-          <a href="#"><?=prop("EMAIL")?></a>
-        </li>
-
-        <li>
-          <i class="fa fa-money"></i>
-          <span><?=number_format($arProp["payment"], 0, ".", " ")?> руб. / мес.</span>
-        </li>
-
-        <li>
-          <i class="fa fa-birthday-cake"></i>
-          <span>26 лет</span>
-        </li>
-
-        <li>
-          <i class="fa fa-phone"></i>
-          <span><?=prop("PHONE")?></span>
-        </li>
-
-        <li>
-          <i class="fa fa-envelope"></i>
-          <a href="#"><?=prop("EMAIL")?></a>
-        </li>
-      </ul>
-
-      <div class="tag-list">
-        <?php foreach ($arKeyWords as $sName) {
-          echo "<span>".$sName."</span>";
-        } ?>
+<section class="property-area section-gap relative" id="property">
+  <div class="overlay overlay-bg">
+  </div>
+  <div class="container">
+    <div class="row d-flex justify-content-center">
+      <div class="col-md-8 pb-40 header-text">
+        <h1>Самые популярные вакансии на сегодня</h1>
       </div>
     </div>
-  </div>
+    <div class="row">
 
-  <div class="button-group">
-    <div class="action-buttons">
-      <a class="btn btn-success" href="#get-contact">Получить контакт</a>
-    </div>
-  </div>
-</div>
-</header>
-<!-- END Page header -->
+      <?php
+      foreach ($arResult["ITEMS"] as $arItem) {
+
+        $obCompany = CIBlockElement::GetByID($arItem["PROPERTIES"]["COMPANY"]["VALUE"]);
+        $resCompany = $obCompany->GetNextElement();
+        $arCompany = $resCompany->GetFields();
+        $sPathImage = "";
+        if (!empty($arCompany["PREVIEW_PICTURE"]) || !empty($arCompany["DETAIL_PICTURE"])) {
+          $sPathImage = !empty($arCompany["PREVIEW_PICTURE"]) ? CFile::GetPath($arCompany["PREVIEW_PICTURE"]) : CFile::GetPath($arCompany["DETAIL_PICTURE"]);
+        } else {
+          $sPathImage = "/assets/img/logo-default.png";
+        }
 
 
-<!-- Main container -->
-<main>
+        $locationId = $arItem["PROPERTIES"]["CITY"]["VALUE"];
+        $sNameLocation = '';
+        $arSelectLocation = CSaleLocation::GetByID($locationId);
+
+        $sNameLocation .= $arSelectLocation["COUNTRY_NAME_ORIG"];
+        if ($arSelectLocation["REGION_ID"] == $locationId) {
+          $sNameLocation .= ", ".$arSelectLocation["REGION_NAME_ORIG"];
+        } elseif ($arSelectLocation["CITY_ID"] == $locationId) {
+          $sNameLocation .= ", ".$arSelectLocation["CITY_NAME_ORIG"];
+        }
+
+        $sPayment = "Не указана";
+        if (
+          !empty($arItem["PROPERTIES"]["MAX_PAYMENT"]["VALUE"])
+          && !empty($arItem["PROPERTIES"]["MIN_PAYMENT"]["VALUE"])
+        ) {
+          $sPayment = finance($arItem["PROPERTIES"]["MIN_PAYMENT"]["VALUE"])." - ".finance($arItem["PROPERTIES"]["MAX_PAYMENT"]["VALUE"]);
+        } elseif (
+          !empty($arItem["PROPERTIES"]["MAX_PAYMENT"]["VALUE"])
+          && empty($arItem["PROPERTIES"]["MIN_PAYMENT"]["VALUE"])
+        ) {
+          $sPayment = "До ".finance($arItem["PROPERTIES"]["MAX_PAYMENT"]["VALUE"]);
+        } elseif (
+          empty($arItem["PROPERTIES"]["MAX_PAYMENT"]["VALUE"])
+          && !empty($arItem["PROPERTIES"]["MIN_PAYMENT"]["VALUE"])
+        ) {
+          $sPayment = "От ".finance($arItem["PROPERTIES"]["MIN_PAYMENT"]["VALUE"]);
+        }
+
+        $renderImage = CFile::ResizeImageGet($arCompany["PREVIEW_PICTURE"], Array("width" => 200, "height" => 150));
+        $arProp = [
+          "company" => $arCompany["NAME"],
+          "location" => $sNameLocation,
+          "payment" => $sPayment,
+          "image" => $renderImage["src"]
+        ];
 
 
-  <!-- Education -->
-  <section>
-    <div class="container">
+        //echo CFile::ShowImage($renderImage['src'], 200, 200, "border=0", "", true);
 
-      <header class="section-header">
-        <h2>Образование</h2>
-      </header>
+        ?>
 
-      <div class="row">
-        <div class="col-xs-12">
-          <div class="item-block">
-            <header>
-              <img src="assets/img/logo-mit.png" alt="">
-              <div class="hgroup">
-                <h4>Master
-                  <small>Computer Science</small>
-                </h4>
-                <h5>Massachusetts Institute of Technology</h5>
+        <div class="col-lg-4">
+          <div class="single-property">
+            <div class="images" style="max-height: 250px;">
+              <div class="img"><img src="<?=$arProp["image"]?>" class="img-fluid mx-auto d-block" alt=""></div>
+              <a href="/vacancy/<?=$arItem["ID"]?>/"><span>Подробнее</span></a>
+            </div>
+            <div class="desc">
+              <div class="top d-flex justify-content-between">
+                <h4><a href="/vacancy/<?=$arItem["ID"]?>/"><?=$arItem["NAME"]?></a></h4>
               </div>
-              <h6 class="time">2012 - 2014</h6>
-            </header>
-            <div class="item-body">
-              <p>The Massachusetts Institute of Technology (MIT) is a private research university in Cambridge,
-                Massachusetts. Founded in 1861 in response to the increasing industrialization of the United States, MIT
-                adopted a European polytechnic university model and stressed laboratory instruction in applied science
-                and engineering.</p>
+              <div class="top d-flex justify-content-between">
+                <h4><?=$arProp["payment"]?> руб</h4>
+              </div>
+              <div class="middle">
+                <div class="d-flex justify-content-start">
+                  <p>
+                    Регион: <?=$arProp["location"]?>
+                  </p>
+                </div>
+                <div class="d-flex justify-content-start">
+                  <p>
+                    Организация: <span class="gr"><?=$arProp["company"]?></span>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
+        <?php
+      }
+      ?>
     </div>
-  </section>
-  <!-- END Education -->
-
-
-  <!-- Work Experience -->
-  <section class="bg-alt">
-    <div class="container">
-      <header class="section-header">
-        <h2>Последнее места работы</h2>
-      </header>
-
-      <div class="row">
-
-        <!-- Work item -->
-        <div class="col-xs-12">
-          <div class="item-block">
-            <header>
-              <img src="assets/img/logo-envato.png" alt="">
-              <div class="hgroup">
-                <h4>Envato</h4>
-                <h5>Quality assurance engineer</h5>
-              </div>
-              <h6 class="time">Mar 2012 - Jun 2014</h6>
-            </header>
-            <div class="item-body">
-              <p>Responsibilities:</p>
-              <ul>
-                <li>Software testing in a Web Applications/Mobile environment.</li>
-                <li>Software Test Plans from Business Requirement Specifications for test engineering group.</li>
-                <li>Run production tests as part of software implementation; Create, deliver and support test plans for
-                  testing group to execute.
-                </li>
-                <li>Software testing in a Web Applications environment.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <!-- END Work item -->
-
-
-      </div>
-
-    </div>
-  </section>
-  <!-- END Work Experience -->
-
-
-  <!-- Skills -->
-  <section>
-    <div class="container">
-      <header class="section-header">
-        <h2>Уровень навыков</h2>
-      </header>
-
-      <br>
-      <ul class="skills cols-3">
-        <li>
-          <div>
-            <span class="skill-name">HTML</span>
-            <span class="skill-value">100%</span>
-          </div>
-          <div class="progress">
-            <div class="progress-bar" style="width: 100%;"></div>
-          </div>
-        </li>
-
-        <li>
-          <div>
-            <span class="skill-name">CSS</span>
-            <span class="skill-value">95%</span>
-          </div>
-          <div class="progress">
-            <div class="progress-bar" style="width: 95%;"></div>
-          </div>
-        </li>
-
-        <li>
-          <div>
-            <span class="skill-name">Javascript</span>
-            <span class="skill-value">80%</span>
-          </div>
-          <div class="progress">
-            <div class="progress-bar" style="width: 80%;"></div>
-          </div>
-        </li>
-
-        <li>
-          <div>
-            <span class="skill-name">Photoshop</span>
-            <span class="skill-value">60%</span>
-          </div>
-          <div class="progress">
-            <div class="progress-bar" style="width: 60%;"></div>
-          </div>
-        </li>
-
-        <li>
-          <div>
-            <span class="skill-name">ReactJS</span>
-            <span class="skill-value">70%</span>
-          </div>
-          <div class="progress">
-            <div class="progress-bar" style="width: 70%;"></div>
-          </div>
-        </li>
-
-        <li>
-          <div>
-            <span class="skill-name">Team work</span>
-            <span class="skill-value">90%</span>
-          </div>
-          <div class="progress">
-            <div class="progress-bar" style="width: 90%;"></div>
-          </div>
-        </li>
-      </ul>
-
-    </div>
-  </section>
-  <!-- END Skills -->
-
-
-</main>
+  </div>
+</section>

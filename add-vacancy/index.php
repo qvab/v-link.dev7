@@ -174,8 +174,8 @@ if (!empty($_POST) && !empty($_POST["save_vacancy"])) {
       </div>
       <?php
       $arRes = getCategories();
-      $arSchedule = getSchedule();
-      $arTypeOFEmp = getTypeOfEmp();
+      $arSchedule = getGrafic();
+      $arTypeOFEmp = getTypeWork();
 
       $arSections = $arRes["sections"];
       $arCategories = $arRes["categories"];
@@ -243,7 +243,7 @@ if (!empty($_POST) && !empty($_POST["save_vacancy"])) {
           <select class="form-control selectpicker" name="vacancy[schedule][]" data-placeholder="График работы" multiple>
             <?php
             foreach ($arSchedule as $idCategory => $nameCategory) { ?>
-              <option value="<?= $idCategory ?>"><?= $nameCategory ?></option>
+              <option value="<?= $idCategory ?>"><?= $nameCategory["fields"]["NAME"] ?></option>
               <?php
             }
             ?>
@@ -259,7 +259,7 @@ if (!empty($_POST) && !empty($_POST["save_vacancy"])) {
           <select class="form-control selectpicker" name="vacancy[type_of_emp][]" data-placeholder="График работы" multiple>
             <?php
             foreach ($arTypeOFEmp as $idCategory => $nameCategory) { ?>
-              <option value="<?= $idCategory ?>"><?= $nameCategory ?></option>
+              <option value="<?= $idCategory ?>"><?= $nameCategory["fields"]["NAME"] ?></option>
               <?php
             }
             ?>

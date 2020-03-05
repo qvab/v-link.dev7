@@ -56,7 +56,7 @@ if (!empty($_REQUEST["is_login"])) {
     </div>
 
     <div class="login-links">
-      <a class="pull-left" href="/forget-pass">Забыли пароль?</a>
+      <a class="pull-left" href="/recovery-pass/">Забыли пароль?</a>
       <a class="pull-right" href="/reg">Зарегистрироваться</a>
     </div>
   </main>

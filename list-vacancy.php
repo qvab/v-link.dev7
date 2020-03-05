@@ -1,4 +1,4 @@
-<?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
+<? if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
 /** @var array $arParams */
 /** @var array $arResult */
 /** @global CMain $APPLICATION */
@@ -15,7 +15,7 @@ CModule::IncludeModule("sale");
 ?>
 
 <div class="container page-name">
-  <h1 class="text-center white">Поиск резюме</h1>
+  <h1 class="text-center white">Поиск вакансий</h1>
 </div>
 <div class="container">
   <form action="#">
@@ -141,7 +141,7 @@ CModule::IncludeModule("sale");
       <div class="row">
         <div class="col-xs-12">
           <br>
-          <h5>Найденые <strong></strong> резюме</h5>
+          <h5>Найденные <strong></strong> вакансий</h5>
         </div>
       </div>
 
@@ -152,7 +152,10 @@ CModule::IncludeModule("sale");
 
         foreach ($arResult["ITEMS"] as $arItem) {
 
-          $locationId = $arItem["PROPERTIES"]["ID_LOCATION"]["VALUE"];
+
+          $obCompany = CIBlockElement::GetByID($arItem["PROPERTIES"]["COMPANY"]["VALUE"]);
+          $arCompany = $obCompany->GetNext();
+          $locationId = $arItem["PROPERTIES"]["CITY"]["VALUE"];
           $sNameLocation = '';
           $arSelectLocation = CSaleLocation::GetByID($locationId);
 
@@ -163,20 +166,41 @@ CModule::IncludeModule("sale");
             $sNameLocation .= ", ".$arSelectLocation["CITY_NAME_ORIG"];
           }
 
+
+          $sPayment = "Не указана";
+          if (
+            !empty($arItem["PROPERTIES"]["MAX_PAYMENT"]["VALUE"])
+            && !empty($arItem["PROPERTIES"]["MIN_PAYMENT"]["VALUE"])
+          ) {
+            $sPayment = finance($arItem["PROPERTIES"]["MIN_PAYMENT"]["VALUE"])." - ".finance($arItem["PROPERTIES"]["MAX_PAYMENT"]["VALUE"]);
+          } elseif (
+            !empty($arItem["PROPERTIES"]["MAX_PAYMENT"]["VALUE"])
+            && empty($arItem["PROPERTIES"]["MIN_PAYMENT"]["VALUE"])
+          ) {
+            $sPayment = "До ".finance($arItem["PROPERTIES"]["MAX_PAYMENT"]["VALUE"]);
+          }
+          elseif (
+            empty($arItem["PROPERTIES"]["MAX_PAYMENT"]["VALUE"])
+            && !empty($arItem["PROPERTIES"]["MIN_PAYMENT"]["VALUE"])
+          ) {
+            $sPayment = "От ".finance($arItem["PROPERTIES"]["MIN_PAYMENT"]["VALUE"]);
+          }
+
+
           $arProp = [
-            "user" => CUser::GetByID($arItem["PROPERTIES"]["ID_USER"]["VALUE"])->arResult[0]["NAME"],
+            "company" => $arCompany["NAME"],
             "location" => $sNameLocation,
-            "payment" => $arItem["PROPERTIES"]["PAYMENT"]["VALUE"],
+            "payment" => $sPayment,
             "image" => !empty($arItem["PREVIEW_PICTURE"]["SRC"]) ? $arItem["PREVIEW_PICTURE"]["SRC"] : "/img/not-avatar.png"
           ];
           ?>
           <div class="col-sm-12 col-md-6">
-            <a class="item-block" href="/resume/<?=$arItem["ID"]?>/">
+            <a class="item-block" href="/vacancy/<?=$arItem["ID"]?>/">
               <header>
                 <img class="resume-avatar" src="<?=$arProp["image"]?>" alt="">
                 <div class="hgroup">
                   <h4><?=$arItem["NAME"]?></h4>
-                  <h5><?=$arProp["user"]?></h5>
+                  <h5><?=$arProp["company"]?></h5>
                 </div>
               </header>
 
@@ -193,7 +217,7 @@ CModule::IncludeModule("sale");
 
                   <li>
                     <i class="fa fa-money"></i>
-                    <span><?=number_format($arProp["payment"], 0, ".", " ")?> руб. / мес.</span>
+                    <span><?=$arProp["payment"]?> руб. / мес.</span>
                   </li>
                 </ul>
               </footer>
@@ -205,7 +229,7 @@ CModule::IncludeModule("sale");
         <!-- END Resume detail -->
       </div>
       <div class="row pagination-contain">
-        <div class="col-xs-12"><?php  echo $arResult["NAV_STRING"] ?></div>
+        <div class="col-xs-12"><?php echo $arResult["NAV_STRING"] ?></div>
       </div>
     </div>
   </section>

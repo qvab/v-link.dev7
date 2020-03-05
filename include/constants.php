@@ -1,7 +1,7 @@
 <?php
 
 define("ROOT_TEMPLATE", $_SERVER["DOCUMENT_ROOT"]."/bitrix/templates/lpdobra_standart/");
-
+define("ROOT", $_SERVER["DOCUMENT_ROOT"]);
 function vd($data, $bPrint = false)
 {
   echo "<pre>";
@@ -14,16 +14,20 @@ function vd($data, $bPrint = false)
 }
 
 
-function getCategories()
+function getCategories($ids = false)
 {
   $arCategories = [];
   $arSections = [];
   $arSelect = ["ID", "IBLOCK_SECTION_ID", "NAME"];
   $arFilter = ["IBLOCK_ID" => 41];
+  if (!empty($ids)) {
+    $arFilter["ID"] = $ids;
+  }
   $res = CIBlockElement::GetList(Array(), $arFilter, false, Array("nPageSize" => 999), $arSelect);
   while ($ob = $res->GetNextElement()) {
     $arFields = $ob->GetFields();
     $arCategories[$arFields["IBLOCK_SECTION_ID"]][$arFields["ID"]] = $arFields["NAME"];
+    $arAllCategories[$arFields["ID"]] = $arFields["NAME"];
   }
 
   $res = CIBlockSection::GetList(
@@ -37,37 +41,126 @@ function getCategories()
     $arFields = $section->GetFields();
     $arSections[$arFields["ID"]] = $arFields["NAME"];
   }
-  return ["sections" => $arSections, "categories" => $arCategories];
+  return ["sections" => $arSections, "categories" => $arCategories, "all_categories" => $arAllCategories];
 }
 
 
-function getSchedule()
+/**
+ * Образование
+ * @param bool $ids
+ * @return array
+ */
+function getSchedule($ids = false)
 {
   $arCategories = [];
-  $arSelect = ["ID", "IBLOCK_SECTION_ID", "NAME"];
-  $arFilter = ["IBLOCK_ID" => 42];
-  $res = CIBlockElement::GetList(Array(), $arFilter, false, Array("nPageSize" => 999), $arSelect);
+  $arSelect = ["ID", "IBLOCK_ID", "NAME", "DETAIL_TEXT", "PROPERTY_*"];
+  $arFilter = ["IBLOCK_ID" => 38];
+  if (!empty($ids)) {
+    $arFilter["ID"] = $ids;
+  }
+  $res = CIBlockElement::GetList([], $arFilter, false, ["nPageSize" => 999], $arSelect);
   while ($ob = $res->GetNextElement()) {
     $arFields = $ob->GetFields();
-    $arCategories[$arFields["ID"]] = $arFields["NAME"];
+    $arCategories[$arFields["ID"]] = [
+      "fields" => $arFields,
+      "prop" => $ob->GetProperties()
+    ];
   }
   return $arCategories;
 }
 
-function getTypeOfEmp()
+/**
+ * Последние места работы
+ * @param bool $ids
+ * @return array
+ */
+function getTypeOfEmp($ids = false)
 {
   $arCategories = [];
-  $arSelect = ["ID", "IBLOCK_SECTION_ID", "NAME"];
+  $arSelect = ["ID", "IBLOCK_ID", "NAME", "DETAIL_TEXT", "PROPERTY_*"];
+  $arFilter = ["IBLOCK_ID" => 39];
+  if (!empty($ids)) {
+    $arFilter["ID"] = $ids;
+  }
+  $res = CIBlockElement::GetList([], $arFilter, false, ["nPageSize" => 999], $arSelect);
+  while ($ob = $res->GetNextElement()) {
+    $arFields = $ob->GetFields();
+    $arCategories[$arFields["ID"]] = [
+      "fields" => $arFields,
+      "prop" => $ob->GetProperties()
+    ];
+  }
+  return $arCategories;
+}
+
+/**
+ * Тип занятости
+ * @param bool $ids
+ * @return array
+ */
+function getTypeWork($ids = false)
+{
+  $arCategories = [];
+  $arSelect = ["ID", "IBLOCK_ID", "NAME", "DETAIL_TEXT", "PROPERTY_*"];
   $arFilter = ["IBLOCK_ID" => 43];
-  $res = CIBlockElement::GetList(Array(), $arFilter, false, Array("nPageSize" => 999), $arSelect);
+  if (!empty($ids)) {
+    $arFilter["ID"] = $ids;
+  }
+  $res = CIBlockElement::GetList([], $arFilter, false, ["nPageSize" => 999], $arSelect);
   while ($ob = $res->GetNextElement()) {
     $arFields = $ob->GetFields();
-    $arCategories[$arFields["ID"]] = $arFields["NAME"];
+    $arCategories[$arFields["ID"]] = [
+      "fields" => $arFields,
+      "prop" => $ob->GetProperties()
+    ];
+  }
+  return $arCategories;
+}
+
+/**
+ * Гарфик работы
+ * @param bool $ids
+ * @return array
+ */
+function getGrafic($ids = false)
+{
+  $arCategories = [];
+  $arSelect = ["ID", "IBLOCK_ID", "NAME", "DETAIL_TEXT", "PROPERTY_*"];
+  $arFilter = ["IBLOCK_ID" => 42];
+  if (!empty($ids)) {
+    $arFilter["ID"] = $ids;
+  }
+  $res = CIBlockElement::GetList([], $arFilter, false, ["nPageSize" => 999], $arSelect);
+  while ($ob = $res->GetNextElement()) {
+    $arFields = $ob->GetFields();
+    $arCategories[$arFields["ID"]] = [
+      "fields" => $arFields,
+      "prop" => $ob->GetProperties()
+    ];
   }
   return $arCategories;
 }
 
 
+function finance($number)
+{
+  return number_format($number, 0, ".", " ");
+}
+
+function countDays($d2)
+{
+  $d1_ts = strtotime("now");
+  $d2_ts = strtotime($d2);
+
+  $seconds = abs($d1_ts - $d2_ts);
+
+  return floor($seconds / 86400);
+}
+
+/**
+ * Получение текущей компании
+ * @return array|bool
+ */
 function getCurrentCompany()
 {
   global $USER;
@@ -130,7 +223,24 @@ function showBlockMessage($text, $type = "success")
   }
 }
 
+/**
+ * Считаем возраст
+ * @param $birthdayDate
+ * @return string
+ */
+function getFullYears($birthdayDate)
+{
+  $datetime = new DateTime($birthdayDate);
+  $interval = $datetime->diff(new DateTime(date("Y-m-d")));
+  return $interval->format("%Y");
+}
 
+
+/**
+ * Получение ключевых слов по ID
+ * @param $arIds
+ * @return array
+ */
 function getKeywordsByIds($arIds)
 {
   $arGetKeywords = [];
@@ -150,6 +260,86 @@ function getKeywordsByIds($arIds)
   }
   return $arGetKeywords;
 }
+
+
+function searchKeyWord($sTitle, $bResume = false, $bSelectedId = false) {
+  $arGetKeywords = $arKeyWordsIds = [];
+  $arTitle = [];
+  if (gettype($sTitle) != "array") {
+    $sTitle = $sTitle."%";
+  } else {
+    foreach ($sTitle as $sName) {
+      $arTitle[] = $sName."%";
+    }
+    $sTitle = $arTitle;
+  }
+
+  $res = CIBlockElement::GetList(
+    [],
+    [
+      "IBLOCK_ID" => 40,
+      "NAME" => $sTitle
+    ],
+    false,
+    ["nPageSize" => 999],
+    ["ID", "NAME"]
+  );
+  while ($ob = $res->GetNextElement()) {
+    $arFields = $ob->GetFields();
+    $arGetKeywords[$arFields["ID"]] = [
+      "value" => $arFields["NAME"],
+      "type" => "key"
+    ];
+    $arKeyWordsIds[] = $arFields["ID"];
+  }
+  if (empty($bResume)) {
+    $res = CIBlockElement::GetList(
+      [],
+      [
+        "IBLOCK_ID" => 34,
+        "NAME" => $sTitle
+      ],
+      false,
+      ["nPageSize" => 999],
+      ["ID", "NAME"]
+    );
+    $arNames = [];
+    while ($ob = $res->GetNextElement()) {
+      $arFields = $ob->GetFields();
+      if (!in_array($arFields["NAME"], $arNames)) {
+        $arNames[] = $arFields["NAME"];
+        $arGetKeywords[$arFields["ID"]] = [
+          "value" => $arFields["NAME"],
+          "type" => "vacancy"
+        ];
+      }
+    }
+  } elseif($bResume == "resume") {
+    $res = CIBlockElement::GetList(
+      [],
+      [
+        "IBLOCK_ID" => 35,
+        "NAME" => $sTitle
+      ],
+      false,
+      ["nPageSize" => 999],
+      ["ID", "NAME"]
+    );
+    $arNames = [];
+    while ($ob = $res->GetNextElement()) {
+      $arFields = $ob->GetFields();
+      if (!in_array($arFields["NAME"], $arNames)) {
+        $arNames[] = $arFields["NAME"];
+        $arGetKeywords[$arFields["ID"]] = [
+          "value" => $arFields["NAME"],
+          "type" => "resume"
+        ];
+      }
+    }
+  }
+  return empty($bSelectedId) ? $arGetKeywords : $arKeyWordsIds;
+}
+
 
 
 /**

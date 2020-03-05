@@ -86,13 +86,6 @@ $(document).ready(function(){
             });
         });
 
-
-
-
-       //  Start Google map 
-
-            // When the window has finished loading create our google map below
-            google.maps.event.addDomListener(window, 'load', init);
         
             function init() {
                 // Basic options for a simple Google Map
@@ -144,22 +137,5 @@ $(document).ready(function(){
                   prefix: "",
                   grid: true
               });
-              $("#range2").ionRangeSlider({
-                  hide_min_max: true,
-                  keyboard: true,
-                  min: 0,
-                  max: 40,
-                  from: 0,
-                  to: 40,
-                  type: 'double',
-                  step: 1,
-                  prefix: "",
-                  grid: true
-              });             
-
-   
-
-
-
 
  });

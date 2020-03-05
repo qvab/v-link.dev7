@@ -1910,7 +1910,7 @@ h1, h2, h3, h4, h5, h6 {
   transition: all 0.3s ease 0s;
 }
 
-.menu-top li:nth-of-type(3) {
+.menu-top li.red {
   background-color: #f41068;
 }
 
@@ -2380,6 +2380,7 @@ text-transform:uppercase .menutop-wrap .menu-top .list li:hover a {
   -o-transition: all 0.3s ease 0s;
   transition: all 0.3s ease 0s;
 }
+
 .single-service:hover {
   box-shadow: -14.142px 14.142px 20px 0px rgba(157, 157, 157, 0.5);
   cursor: pointer;
@@ -3005,9 +3006,11 @@ h6 {
     font-size: 34px;
     line-height: 65px !important;
   }
+
   .single-service {
     margin-bottom: 10px;
   }
+
   .page-header {
     padding-top: 0;
   }
@@ -3019,4 +3022,58 @@ h6 {
     font-size: 26px;
     line-height: 43px !important;
   }
+}
+
+/****************** mishanin correction **************/
+
+#loader {
+  background: url(/img/loader.gif) no-repeat center center;
+  display: inline-block;
+  width: 45px;
+  height: 45px;
+}
+
+#result-search-key {
+  position: relative;
+}
+
+.search-pop {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 150px;
+  max-height: 250px;
+  box-shadow: 0 0px 3px 1px #ccc inset;
+  width: 100%;
+  background-color: #fff;
+  z-index: 15;
+  text-align: left;
+  overflow-y: auto;
+}
+.search-pop li.item:hover {
+  background-color: #69A932;
+  color: #fff;
+  cursor: pointer;
+}
+
+.search-pop li + li {
+  border-top: 1px #ccc solid;
+}
+
+.search-pop li {
+  display: block;
+  padding: 10px 15px;
+  font-size: 16px;
+  color: #000;
+  font-weight: 600;
+}
+
+.search-pop smail {
+  font-size: 11px;
+  margin-left: 15px;
+  font-weight: 100;
+}
+
+.images .img {
+  max-height: 200px;
 }

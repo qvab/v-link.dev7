@@ -57,7 +57,10 @@ class Resume
           "KEY_WORDS" => $this->arGetKeywords,
           "EDUCATIONS" => $this->arAddEducation,
           "PREV_WORKS" => $this->arAddPrevWorks,
-          "CATEGORIES" => $this->req["categories"]
+          "CATEGORIES" => $this->req["categories"],
+          "TYPE_OF_EMP" => $this->req["type_of_emp"],
+          "SCHEDULE" => $this->req["schedule"],
+
         ],
         "DETAIL_TEXT" => $this->req["description"],
         "DETAIL_PICTURE" => $this->cfile->MakeFileArray($this->idFile),
@@ -85,6 +88,8 @@ class Resume
           $this->arPrevWorks[$k] = [
             "NAME" => $this->obUser->GetLogin()." (".$this->obUser->GetID().") ".$this->req["works"]["name_company"][$k],
             "PROPERTY_VALUES" => [
+              "NAME_ORG" => $this->req["works"]["name_company"][$k],
+              "SPECIAL" => $this->req["works"]["special"][$k],
               "ID_USER" => $this->obUser->GetID(),
               "LOCATION" => $this->req["works"]["location"][$k],
               "DATE_START" => $this->date->add($this->req["works"]["date_start"][$k]),
@@ -118,6 +123,7 @@ class Resume
           $this->arEducation[$k] = [
             "NAME" => $this->obUser->GetLogin()." (".$this->obUser->GetID().") ".$this->req["education"]["name"][$k],
             "PROPERTY_VALUES" => [
+              "NAME_EDUCATION" => $this->req["education"]["name"][$k],
               "ID_USER" => $this->obUser->GetID(),
               "LEVEL" => $this->req["education"]["level"][$k],
               "SPECIAL" => $this->req["education"]["special"][$k],
@@ -238,6 +244,10 @@ while ($section = $res->GetNextElement()) {
   $arFields = $section->GetFields();
   $arSections[$arFields["ID"]] = $arFields["NAME"];
 }
+
+$arSchedule = getGrafic();
+$arTypeOFEmp = getTypeWork();
+
 ?>
   <form enctype="multipart/form-data" action="" method="POST">
 
@@ -257,11 +267,11 @@ while ($section = $res->GetNextElement()) {
     border-radius: 16px;
 ">Резюме успешно добавлено</div>
         <?php
-        } else { ?>
+        } elseif (empty($addResume) && !empty($_POST)) { ?>
           <div class="success-resume" style="
     text-align: center;
     color: #fff;
-    background-color: #ff7e0.;
+    background-color: #ff7e00;
     padding: 25px;
     /* max-width: 270px; */
     margin: 0 auto;
@@ -276,7 +286,7 @@ while ($section = $res->GetNextElement()) {
         <div class="row">
           <div class="col-xs-12 col-sm-4">
             <div class="form-group">
-              <input type="file" name="resume[file]" class="dropify" data-default-file="/assets/img/logo-default.png">
+              <input type="file" name="resume[file]" class="dropify">
               <span class="help-block">Заргузите фотографию</span>
             </div>
           </div>
@@ -377,6 +387,37 @@ while ($section = $res->GetNextElement()) {
                 <div class="input-group input-group-sm">
                   <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
                   <input type="text" class="form-control" placeholder="Email" name="resume[email]">
+                </div>
+              </div>
+
+              <div class="form-group col-xs-12 col-sm-6">
+                <label>График работы</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-addon"><i class="fa fa-briefcase"></i></span>
+                  <select class="form-control selectpicker" name="resume[schedule][]" data-placeholder="График работы" multiple>
+                    <?php
+                    foreach ($arSchedule as $idCategory => $nameCategory) { ?>
+                      <option value="<?= $idCategory ?>"><?= $nameCategory["fields"]["NAME"] ?></option>
+                      <?php
+                    }
+                    ?>
+                  </select>
+                </div>
+              </div>
+
+
+              <div class="form-group col-xs-12 col-sm-6">
+                <label>Тип занятости</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-addon"><i class="fa fa-briefcase"></i></span>
+                  <select class="form-control selectpicker" name="resume[type_of_emp][]" data-placeholder="График работы" multiple>
+                    <?php
+                    foreach ($arTypeOFEmp as $idCategory => $nameCategory) { ?>
+                      <option value="<?= $idCategory ?>"><?= $nameCategory["fields"]["NAME"] ?></option>
+                      <?php
+                    }
+                    ?>
+                  </select>
                 </div>
               </div>
 
@@ -590,6 +631,11 @@ while ($section = $res->GetNextElement()) {
                       <div class="form-group">
                         <input type="text" class="form-control" placeholder="Название компании"
                                name="resume[works][name_company][]">
+                      </div>
+
+                      <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Специальность"
+                               name="resume[works][special][]">
                       </div>
 
                       <div class="form-group">

@@ -2596,11 +2596,11 @@ tbody.collapse.show {
   vertical-align: middle;
 }
 
-.btn-group > .btn,
-.btn-group-vertical > .btn {
+.btn-group > .btn, .btn-group-vertical > .btn {
   position: relative;
   flex: 0 1 auto;
   margin-bottom: 0;
+  overflow: hidden;
 }
 
 .btn-group > .btn:hover,
