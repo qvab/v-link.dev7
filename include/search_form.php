@@ -140,7 +140,7 @@ $arListFilter = [
 </div>
 <script src="/assets/js/core_rv.js"></script>
 <script>
-  RV.searchKey("#search-key", "#result-search-key", "#search-typekey", "resume");
+  RV.searchKey("#search-key", "#result-search-key", "#search-typekey", "<?=$sTypeListPage?>");
 </script>
 <script src="/assets/js/ion.rangeSlider.js"></script>
 <script>
@@ -148,7 +148,7 @@ $arListFilter = [
     hide_min_max: true,
     keyboard: true,
     min: 0,
-    max: 300000,
+    max: 1000000,
     from: <?=$arListFilter["min_payment"]?>,
     to: <?=$arListFilter["max_payment"]?>,
     type: 'double',

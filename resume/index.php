@@ -166,4 +166,16 @@ if (!empty($_GET["search"])) {
 		"USE_SEARCH" => "N",
 		"USE_SHARE" => "N"
 	)
-);?><?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>
+);?>
+
+<div class="pop-contact">
+  <div class="contain">
+    <h1>Получить данные контакта</h1>
+    <div class="content"></div>
+  </div><div class="helper"></div>
+</div>
+<script src="/assets/js/core_rv.js"></script>
+<script>
+  RV.getContact();
+</script>
+<?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>

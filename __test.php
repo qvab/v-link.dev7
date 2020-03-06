@@ -1,4 +1,5 @@
 <? if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
+CModule::IncludeModule("sale");
 /** @var array $arParams */
 /** @var array $arResult */
 /** @global CMain $APPLICATION */
@@ -11,107 +12,190 @@
 /** @var string $componentPath */
 /** @var CBitrixComponent $component */
 $this->setFrameMode(true);
-CModule::IncludeModule("sale");
+
+
+$locationId = $arResult["PROPERTIES"]["ID_LOCATION"]["VALUE"];
+$sNameLocation = '';
+$arSelectLocation = CSaleLocation::GetByID($locationId);
+
+$sNameLocation .= $arSelectLocation["COUNTRY_NAME_ORIG"];
+if ($arSelectLocation["REGION_ID"] == $locationId) {
+  $sNameLocation .= ", ".$arSelectLocation["REGION_NAME_ORIG"];
+} elseif ($arSelectLocation["CITY_ID"] == $locationId) {
+  $sNameLocation .= ", ".$arSelectLocation["CITY_NAME_ORIG"];
+}
+
+
+$arProp = [
+  "user" => CUser::GetByID($arResult["PROPERTIES"]["ID_USER"]["VALUE"])->arResult[0]["NAME"],
+  "location" => $sNameLocation,
+  "payment" => $arResult["PROPERTIES"]["PAYMENT"]["VALUE"],
+  "image" => !empty($arResult["DETAIL_PICTURE"]["SRC"]) ? $arResult["DETAIL_PICTURE"]["SRC"] : "/img/not-avatar.png",
+  "email" => $arResult["PROPERTIES"]["EMAIL"]["VALUE"],
+  "key_words" => $arResult["PROPERTIES"]["KEY_WORDS"]["VALUE"],
+  "phone" => $arResult["PROPERTIES"]["PHONE"]["VALUE"],
+  "age" => getFullYears($arResult["PROPERTIES"]["HAPPY_DAY"]["VALUE"]),
+  "educations_id" => $arResult["PROPERTIES"]["EDUCATIONS"]["VALUE"],
+  "prev_works_id" => $arResult["PROPERTIES"]["PREV_WORKS"]["VALUE"],
+  "site" => !empty($arResult["PROPERTIES"]["SITE"]["VALUE"]) ? $arResult["PROPERTIES"]["SITE"]["VALUE"] : "Не заполнено",
+];
+$arKeyWords = $arSchedule = $arPrevWorks = [];
+if (!empty($arProp["key_words"])) {
+  $arKeyWords = getKeywordsByIds($arProp["key_words"]);
+}
+
+if (!empty($arProp["educations_id"])) {
+  // Получаем список образований
+  $arSchedule = getSchedule($arProp["educations_id"]);
+}
+
+if (!empty($arProp["prev_works_id"])) {
+  // Получаем список предыдущих мест работы
+  $arPrevWorks = getTypeOfEmp($arProp["prev_works_id"]);
+}
+
+
 ?>
 
-<section class="property-area section-gap relative" id="property">
-  <div class="overlay overlay-bg">
-  </div>
-  <div class="container">
-    <div class="row d-flex justify-content-center">
-      <div class="col-md-8 pb-40 header-text">
-        <h1>Самые популярные вакансии на сегодня</h1>
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-4">
+      <img src="<?=$arProp["image"]?>" alt="">
+    </div>
+
+    <div class="col-xs-12 col-sm-8 header-detail">
+      <div class="hgroup">
+        <h1><?=$arResult["NAME"]?></h1>
+        <h3><?=$arProp["user"]?></h3>
+      </div>
+      <hr>
+      <p class="lead"><?=$arResult["DETAIL_TEXT"]?></p>
+
+      <ul class="details cols-2">
+        <li>
+          <i class="fa fa-map-marker"></i>
+          <span><?=$arProp["location"]?></span>
+        </li>
+
+        <li>
+          <i class="fa fa-globe"></i>
+          <a href="#"><?=$arProp["site"]?></a>
+        </li>
+
+        <li>
+          <i class="fa fa-money"></i>
+          <span><?=number_format($arProp["payment"], 0, ".", " ")?> руб. / мес.</span>
+        </li>
+
+        <li>
+          <i class="fa fa-birthday-cake"></i>
+          <span><?=$arProp["age"]?> лет</span>
+        </li>
+<?php /*
+        <li>
+          <i class="fa fa-phone"></i>
+          <span><?=$arProp["phone"]?></span>
+        </li>
+
+        <li>
+          <i class="fa fa-envelope"></i>
+          <a href="#"><?=$arProp["email"]?></a>
+        </li>
+ */ ?>
+      </ul>
+
+      <div class="tag-list">
+        <?php foreach ($arKeyWords as $sName) {
+          echo "<span>".$sName."</span>";
+        } ?>
       </div>
     </div>
-    <div class="row">
+  </div>
 
-      <?php
-      foreach ($arResult["ITEMS"] as $arItem) {
-
-        $obCompany = CIBlockElement::GetByID($arItem["PROPERTIES"]["COMPANY"]["VALUE"]);
-        $resCompany = $obCompany->GetNextElement();
-        $arCompany = $resCompany->GetFields();
-        $sPathImage = "";
-        if (!empty($arCompany["PREVIEW_PICTURE"]) || !empty($arCompany["DETAIL_PICTURE"])) {
-          $sPathImage = !empty($arCompany["PREVIEW_PICTURE"]) ? CFile::GetPath($arCompany["PREVIEW_PICTURE"]) : CFile::GetPath($arCompany["DETAIL_PICTURE"]);
-        } else {
-          $sPathImage = "/assets/img/logo-default.png";
-        }
+  <div class="button-group">
+    <div class="action-buttons">
+      <a class="btn btn-success" data-id-user="<?=$arResult["PROPERTIES"]["ID_USER"]["VALUE"]?>" data-id-resume="<?=$arResult["ID"]?>" href="#get-contact">Получить контакт</a>
+    </div>
+  </div>
+</div>
+</header>
+<!-- END Page header -->
 
 
-        $locationId = $arItem["PROPERTIES"]["CITY"]["VALUE"];
-        $sNameLocation = '';
-        $arSelectLocation = CSaleLocation::GetByID($locationId);
-
-        $sNameLocation .= $arSelectLocation["COUNTRY_NAME_ORIG"];
-        if ($arSelectLocation["REGION_ID"] == $locationId) {
-          $sNameLocation .= ", ".$arSelectLocation["REGION_NAME_ORIG"];
-        } elseif ($arSelectLocation["CITY_ID"] == $locationId) {
-          $sNameLocation .= ", ".$arSelectLocation["CITY_NAME_ORIG"];
-        }
-
-        $sPayment = "Не указана";
-        if (
-          !empty($arItem["PROPERTIES"]["MAX_PAYMENT"]["VALUE"])
-          && !empty($arItem["PROPERTIES"]["MIN_PAYMENT"]["VALUE"])
-        ) {
-          $sPayment = finance($arItem["PROPERTIES"]["MIN_PAYMENT"]["VALUE"])." - ".finance($arItem["PROPERTIES"]["MAX_PAYMENT"]["VALUE"]);
-        } elseif (
-          !empty($arItem["PROPERTIES"]["MAX_PAYMENT"]["VALUE"])
-          && empty($arItem["PROPERTIES"]["MIN_PAYMENT"]["VALUE"])
-        ) {
-          $sPayment = "До ".finance($arItem["PROPERTIES"]["MAX_PAYMENT"]["VALUE"]);
-        } elseif (
-          empty($arItem["PROPERTIES"]["MAX_PAYMENT"]["VALUE"])
-          && !empty($arItem["PROPERTIES"]["MIN_PAYMENT"]["VALUE"])
-        ) {
-          $sPayment = "От ".finance($arItem["PROPERTIES"]["MIN_PAYMENT"]["VALUE"]);
-        }
-
-        $renderImage = CFile::ResizeImageGet($arCompany["PREVIEW_PICTURE"], Array("width" => 200, "height" => 150));
-        $arProp = [
-          "company" => $arCompany["NAME"],
-          "location" => $sNameLocation,
-          "payment" => $sPayment,
-          "image" => $renderImage["src"]
-        ];
+<!-- Main container -->
+<main>
 
 
-        //echo CFile::ShowImage($renderImage['src'], 200, 200, "border=0", "", true);
+  <!-- Education -->
+  <section>
+    <div class="container">
 
-        ?>
+      <header class="section-header">
+        <h2>Образование</h2>
+      </header>
 
-        <div class="col-lg-4">
-          <div class="single-property">
-            <div class="images" style="max-height: 250px;">
-              <div class="img"><img src="<?=$arProp["image"]?>" class="img-fluid mx-auto d-block" alt=""></div>
-              <a href="/vacancy/<?=$arItem["ID"]?>/"><span>Подробнее</span></a>
-            </div>
-            <div class="desc">
-              <div class="top d-flex justify-content-between">
-                <h4><a href="/vacancy/<?=$arItem["ID"]?>/"><?=$arItem["NAME"]?></a></h4>
-              </div>
-              <div class="top d-flex justify-content-between">
-                <h4><?=$arProp["payment"]?> руб</h4>
-              </div>
-              <div class="middle">
-                <div class="d-flex justify-content-start">
-                  <p>
-                    Регион: <?=$arProp["location"]?>
-                  </p>
+      <div class="row">
+        <?php
+        foreach ($arSchedule as $arItem) { ?>
+          <div class="col-xs-12">
+            <div class="item-block">
+              <header>
+                <div class="hgroup">
+                  <h4><?=$arItem["prop"]["LEVEL"]["VALUE"]?>
+                    <small><?=$arItem["prop"]["SPECIAL"]["VALUE"]?></small>
+                  </h4>
+                  <h5><?=$arItem["prop"]["NAME_EDUCATION"]["VALUE"]?></h5>
                 </div>
-                <div class="d-flex justify-content-start">
-                  <p>
-                    Организация: <span class="gr"><?=$arProp["company"]?></span>
-                  </p>
-                </div>
+                <h6 class="time"><?=date("Y", strtotime($arItem["prop"]["DATE_START"]["VALUE"]))?>
+                  - <?=date("Y", strtotime($arItem["prop"]["DATE_END"]["VALUE"]))?></h6>
+              </header>
+              <div class="item-body">
+                <p><?=$arItem["fields"]["DETAIL_TEXT"]?></p>
               </div>
             </div>
           </div>
-        </div>
-        <?php
-      }
-      ?>
+          <?php
+        }
+        ?>
+      </div>
+
     </div>
-  </div>
-</section>
+  </section>
+  <!-- END Education -->
+
+
+  <!-- Work Experience -->
+  <section class="bg-alt">
+    <div class="container">
+      <header class="section-header">
+        <h2>Последнее места работы</h2>
+      </header>
+
+      <div class="row">
+        <?php foreach ($arPrevWorks as $arWork) {?>
+          <!-- Work item -->
+          <div class="col-xs-12">
+            <div class="item-block">
+              <header>
+                <div class="hgroup">
+                  <h4><?=$arWork["prop"]["NAME_ORG"]["VALUE"]?></h4>
+                  <h5><?=$arWork["prop"]["SPECIAL"]["VALUE"]?></h5>
+                </div>
+                <h6 class="time"><?=date("d.m.Y", strtotime($arWork["prop"]["DATE_START"]["VALUE"]))?> - <?=date("d.m.Y", strtotime($arWork["prop"]["DATE_END"]["VALUE"]))?></h6>
+              </header>
+              <div class="item-body">
+                <p><?=$arWork["fields"]["DETAIL_TEXT"]?></p>
+              </div>
+            </div>
+          </div>
+          <!-- END Work item -->
+          <?php
+        }
+        ?>
+
+      </div>
+
+    </div>
+  </section>
+  <!-- END Work Experience -->
+</main>

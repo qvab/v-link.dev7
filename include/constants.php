@@ -185,9 +185,66 @@ function getCurrentCompany()
   }
 }
 
-function getResume($id)
+function getVacancyByUser()
+{
+  $res = getCurrentCompany();
+  if (!empty($res)) {
+    $id = $res["fields"]["ID"];
+    $res = CIBlockElement::GetList(
+      [],
+      [
+        "IBLOCK_ID" => 34,
+        "COMPANY" => $id
+      ],
+      false,
+      ["nPageSize" => 999],
+      ["ID", "NAME"]
+    );
+    while ($ob = $res->GetNextElement()) {
+      $arFields = $ob->GetFields();
+      $arGetKeywords[$arFields["ID"]] = [
+        "fields" => $arFields,
+        "name" => $arFields["NAME"]
+      ];
+    }
+    return $arGetKeywords;
+  } else {
+    return [];
+  }
+}
+
+
+function getResumeByUser()
 {
 
+  global $USER;
+  $id = $USER->GetID();
+
+  $res = CIBlockElement::GetList(
+    [],
+    [
+      "IBLOCK_ID" => 35,
+      "PROPRERTY_USER_ID_VALUE" => $id
+    ],
+    false,
+    ["nPageSize" => 999],
+    ["ID", "NAME"]
+  );
+  $arNames = [];
+  while ($ob = $res->GetNextElement()) {
+    $arFields = $ob->GetFields();
+    if (!in_array($arFields["NAME"], $arNames)) {
+      $arGetKeywords[$arFields["ID"]] = [
+        "fields" => $arFields,
+        "name" => $arFields["NAME"]
+      ];
+    }
+  }
+  if (!empty($arGetKeywords)) {
+    return $arGetKeywords;
+  } else {
+    return [];
+  }
 }
 
 
@@ -198,29 +255,34 @@ function getPopularCategories()
 }
 
 
-function showBlockMessage($text, $type = "success")
+function showBlockMessage($text, $type = "success", $bReturn = false)
 {
-  if (!empty($type == "success")) { ?>
-    <div class="success-resume" style="
+
+  if ($type == "success") {
+    $res = '<div class="success-resume" style="
     text-align: center;
     color: #fff;
     background-color: #30AB1E;
     padding: 25px;
     margin: 0 auto;
     border-radius: 16px;
-"><?=$text?></div>
-    <?php
-  } else { ?>
-    <div class="success-resume" style="
+">'.$text.'</div>';
+  } else {
+    $res = '<div class="success-resume" style="
     text-align: center;
     color: #fff;
     background-color: #ff7e0.;
     padding: 25px;
     margin: 0 auto;
     border-radius: 16px;
-"><?=$text?></div>
-    <?php
+">'.$text.'</div>';
   }
+  if (!empty($bReturn)) {
+    return $res;
+  } else {
+    echo $res;
+  }
+
 }
 
 /**
@@ -262,7 +324,8 @@ function getKeywordsByIds($arIds)
 }
 
 
-function searchKeyWord($sTitle, $bResume = false, $bSelectedId = false) {
+function searchKeyWord($sTitle, $bResume = false, $bSelectedId = false)
+{
   $arGetKeywords = $arKeyWordsIds = [];
   $arTitle = [];
   if (gettype($sTitle) != "array") {
@@ -314,7 +377,7 @@ function searchKeyWord($sTitle, $bResume = false, $bSelectedId = false) {
         ];
       }
     }
-  } elseif($bResume == "resume") {
+  } elseif ($bResume == "resume") {
     $res = CIBlockElement::GetList(
       [],
       [
@@ -339,7 +402,6 @@ function searchKeyWord($sTitle, $bResume = false, $bSelectedId = false) {
   }
   return empty($bSelectedId) ? $arGetKeywords : $arKeyWordsIds;
 }
-
 
 
 /**

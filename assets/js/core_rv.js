@@ -6,6 +6,9 @@ var obRV = function () {
    * Класс для работы с авторизаций/регистрацией
    */
   this.auth = {
+    /**
+     * Метод авторизации
+     */
     logIn: function () {
       $("#form-ajax-login").submit(function () {
         $.ajax({
@@ -26,6 +29,9 @@ var obRV = function () {
         return false;
       });
     },
+    /**
+     * Метод регистрации
+     */
     registration: function () {
       $("#form-ajax-registration").submit(function () {
         return false;
@@ -48,13 +54,17 @@ var obRV = function () {
         });
         return false;
       });
-    },
-    remindPass: function () {
-
     }
   };
 
 
+  /**
+   * Поиск по ключу
+   * @param selector
+   * @param place
+   * @param typekey
+   * @param typeSearch
+   */
   this.searchKey = function (selector, place, typekey, typeSearch) {
     var timer = false;
     $(selector).keyup(function () {
@@ -116,6 +126,120 @@ var obRV = function () {
       }
     });
   };
+
+
+  /**
+   * Получение контакта
+   */
+  this.getContact = function () {
+    $(".pop-contact").click(function (e) {
+      e = e || e.window;
+      if (e.target === this) {
+        $(".pop-contact").fadeOut(300);
+      }
+    });
+
+    $('a[href="#get-contact"]').click(function () {
+      $(".pop-contact").fadeIn(300);
+      var id = $(this).attr("data-id-resume");
+      var idUser = $(this).attr("data-id-user");
+      $.ajax({
+        url: "/ajax/get_contact.php?id=" + id + "&id_user="+idUser,
+        dataType: "json",
+        success: function (data) {
+          if (typeof data.message !== "undefined") {
+            $(".pop-contact .content").html(data.message);
+          } else {
+            $(".pop-contact .content").html(data.form);
+            self.onJobApp();
+          }
+        }
+      });
+      return false;
+    });
+  };
+
+
+  /**
+   * Получение вакансии
+   */
+  this.getVacancy = function () {
+    $(".pop-contact").click(function (e) {
+      e = e || e.window;
+      if (e.target === this) {
+        $(".pop-contact").fadeOut(300);
+      }
+    });
+
+    $('a[href="#app-vacancy"]').click(function () {
+      $(".pop-contact").fadeIn(300);
+      var id = $(this).attr("data-id-vacancy");
+      var companyId = $(this).attr("data-id-user");
+      $.ajax({
+        url: "/ajax/get_vacancy.php?id=" + id + "&company="+companyId,
+        dataType: "json",
+        success: function (data) {
+          if (typeof data.message !== "undefined") {
+            $(".pop-contact .content").html(data.message);
+          } else {
+            $(".pop-contact .content").html(data.form);
+            self.onResponseApp();
+          }
+        }
+      });
+      return false;
+    });
+  };
+
+
+  /**
+   * Обработчик формы
+   */
+  this.onJobApp = function () {
+    $("#form-ajax-job").submit(function () {
+      console.log("init form-ajax-job");
+      $.ajax({
+        type: "POST",
+        url: "/ajax/job_app.php",
+        data: $(this).serialize(),
+        dataType: "json",
+        success: function (data) {
+          if (typeof data.success !== "undefined") {
+            $(".pop-contact .content").html(data.success);
+          } else {
+            $(".pop-contact #error").html(data.error);
+          }
+        }
+      });
+      return false;
+    });
+  };
+
+
+  /**
+   * Обработчик формы
+   */
+  this.onResponseApp = function () {
+    $("#form-ajax-job").submit(function () {
+      console.log("init form-ajax-job");
+      $.ajax({
+        type: "POST",
+        url: "/ajax/response_app.php",
+        data: $(this).serialize(),
+        dataType: "json",
+        success: function (data) {
+          if (typeof data.success !== "undefined") {
+            $(".pop-contact .content").html(data.success);
+          } else {
+            $(".pop-contact #error").html(data.error);
+          }
+        }
+      });
+      return false;
+    });
+  };
+
+
 
 };
 

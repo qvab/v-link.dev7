@@ -3050,6 +3050,7 @@ h6 {
   text-align: left;
   overflow-y: auto;
 }
+
 .search-pop li.item:hover {
   background-color: #69A932;
   color: #fff;
@@ -3076,4 +3077,49 @@ h6 {
 
 .images .img {
   max-height: 200px;
+}
+
+/******************* popup contact ****************/
+
+.pop-contact {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.65);
+  text-align: center;
+  display: none;
+}
+
+.pop-contact .contain {
+  display: inline-block;
+  vertical-align: middle;
+  height: 500px;
+  width: 650px;
+  background-color: #fff;
+  max-height: 90%;
+  max-width: 90%;
+  box-sizing: border-box;
+  padding: 20px;
+}
+
+.pop-contact .contain h1 {
+  font-size: 35px;
+  font-weight: 400;
+}
+
+.pop-contact .contain .content {
+  padding: 20px 0;
+}
+
+.helper {
+  display: inline-block;
+  vertical-align: middle;
+  height: 100%;
+}
+
+.fa-money + span {
+  font-weight: bold;
+  color: #666;
 }

@@ -14218,7 +14218,8 @@ dl.icon-holder dd {
 }
 
 .item-block header h4 {
-  color: #000
+  color: #339900;
+  font-weight: 600;
 }
 
 .item-block header h4 a {

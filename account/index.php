@@ -22,7 +22,7 @@ $APPLICATION->SetTitle("О компании"); ?>
             <a class="btn btn-block btn-primary" href="#">Приглашения</a>
           </div>
         </div><br />
-        <h6 style="color: #666;">Меню работадателя</h6>
+        <h6 style="color: #666;">Меню работодателя</h6>
         <div class="row">
           <div class="col-sm-12 col-md-12">
             <a class="btn btn-block btn-black" href="#">Вакансии</a>
