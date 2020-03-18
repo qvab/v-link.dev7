@@ -68,6 +68,9 @@ var obRV = function () {
   this.searchKey = function (selector, place, typekey, typeSearch) {
     var timer = false;
     $(selector).keyup(function () {
+      if (typeof typeSearch !== "string") {
+        typeSearch = typeSearch.val();
+      }
       var sItems = '',
         sHTML = '';
       var loader = '<div style="z-index: 15; width: 100%; height: 100px; position: absolute; background: #fff url(/img/loader.gif) no-repeat center center;"></div>';

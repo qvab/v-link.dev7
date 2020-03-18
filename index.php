@@ -20,8 +20,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); ?>
                     </div>
                     <div class="col">
                       <div class="onoffswitch3 d-block mx-auto">
-                        <input type="checkbox" name="search[type]" class="onoffswitch3-checkbox"
-                               id="myonoffswitch3" checked>
+                        <input type="checkbox" name="search[type]" class="onoffswitch3-checkbox" id="myonoffswitch3" checked>
                         <label class="onoffswitch3-label" for="myonoffswitch3">
                           <span class="onoffswitch3-inner">
                             <span class="onoffswitch3-active">
@@ -40,7 +39,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); ?>
                 </div>
                 <div class="col-lg-8 col-md-6 col-xs-6">
                   <input type="text" name="search[key]" id="search-key" placeholder="Введите включевые слова профессии" class="input-group form-control" />
-                  <input type="hidden" name="search[typekey]" value="" />
+                  <input type="hidden" name="search[typekey]" id="search-typekey" value="vacancy" />
                   <div id="result-search-key"></div>
                 </div>
                 <div class="col-lg-4 col-md-6 col-xs-6">
@@ -52,7 +51,7 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); ?>
                       "CACHE_TYPE" => "A",
                       "FILTER_BY_SITE" => "N",
                       "INITIALIZE_BY_GLOBAL_EVENT" => "",
-                      "INPUT_NAME" => "region",
+                      "INPUT_NAME" => "search[region]",
                       "JS_CALLBACK" => "",
                       "JS_CONTROL_GLOBAL_ID" => "",
                       "PROVIDE_LINK_BY" => "id",
@@ -218,5 +217,18 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); ?>
 <script src="/assets/js/ion.rangeSlider.js"></script>
 <script src="/assets/js/core_rv.js"></script>
 <script>
-  RV.searchKey("#search-key", "#result-search-key");
+  RV.searchKey("#search-key", "#result-search-key", "#search-typekey", $("#search-typekey"));
+
+  $("#myonoffswitch3").change(function () {
+    var type = $(this).prop("checked");
+    console.log(type);
+    if (type) {
+      $(".search-form").attr("action", "/vacancy/");
+      $("#search-typekey").val("vacancy");
+    } else {
+      $(".search-form").attr("action", "/resume/");
+      $("#search-typekey").val("resume");
+    }
+  });
+
 </script>

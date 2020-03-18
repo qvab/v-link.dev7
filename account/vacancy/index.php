@@ -2,18 +2,18 @@
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
 require_once $_SERVER["DOCUMENT_ROOT"]."/account/RVAccount.php";
 $RV = new RVAccount();
-$arResume = $RV->resumeGetList();
+$arResume = $RV->vacancyGetList();
 $APPLICATION->SetTitle("Управление аккаунтом"); ?>
 <div class="container no-shadow">
   <br>
-  <h1 class="text-center">Список моих резюме</h1>
+  <h1 class="text-center">Список вакансий</h1>
   <br>
 </div>
 </header>
 <main>
   <div class="container">
     <?php if (!$USER->IsAuthorized()) {
-      echo "Вы не авторизованы!";
+      showBlockMessage("Вы не авторизованы!", "error");
     } else { ?>
     <div class="row">
       <?php require_once $_SERVER["DOCUMENT_ROOT"]."/account/menu.php"; ?>
@@ -23,26 +23,24 @@ $APPLICATION->SetTitle("Управление аккаунтом"); ?>
 
           <div class="col-xs-12 text-right">
             <br>
-            <a class="btn btn-primary" href="/add-resume/">Добавить резюме</a>
+            <a class="btn btn-primary" href="/add-vacancy/">Добавить вакансию</a>
           </div>
 
           <?php foreach ($arResume as $idResume => $arResume) {
-
-            $sNameLocation = getLocationName($arResume["prop"]["ID_LOCATION"]["VALUE"]);
+            $sNameLocation = getLocationName($arResume["prop"]["CITY"]["VALUE"]);
             $sUsername = CUser::GetByID($arResume["prop"]["ID_USER"]["VALUE"])->arResult[0]["NAME"];
             ?>
             <!-- Resume item -->
             <div class="col-xs-12" id="item-<?=$idResume?>" <?=$arResume["fields"]["ACTIVE"] == "N" ? "style='opacity: 0.6;'" : '';?>>
               <div class="item-block">
                 <header>
-                  <a href="resume-detail.html"><img class="resume-avatar" src="assets/img/avatar.jpg" alt=""></a>
                   <div class="hgroup">
                     <h4><a href="/account/resume/?id=<?=$idResume?>"><?=$arResume["name"]?></a></h4>
                     <h5><?=$sUsername?></h5>
                   </div>
                   <div class="header-meta">
                     <span class="location"><?=$sNameLocation?></span>
-                    <span class="rate"><?=finance($arResume["prop"]["PAYMENT"]["VALUE"])?> руб./мес.</span>
+                    <span class="rate"><?=getPayment($arResume["prop"]["MIN_PAYMENT"]["VALUE"], $arResume["prop"]["MAX_PAYMENT"]["VALUE"])?></span>
                   </div>
                 </header>
 
@@ -58,7 +56,7 @@ $APPLICATION->SetTitle("Управление аккаунтом"); ?>
                       <?php
                     }
                     ?>
-                    <a class="btn btn-xs btn-gray" href="/account/resume_detail/?id=<?=$idResume?>">Редактировать</a>
+                    <a class="btn btn-xs btn-gray" href="/account/vacancy_detail/?id=<?=$idResume?>">Редактировать</a>
                     <a class="btn btn-xs btn-danger" href="#delete-item">Удалить</a>
                   </div>
                 </footer>

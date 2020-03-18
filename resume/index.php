@@ -7,21 +7,12 @@ $arrFilter = [
 ];
 if (!empty($_GET["search"])) {
   if (!empty($_GET["search"]["payment"])) {
-
+    $p = explode(";", $_GET["search"]["payment"]);
     if (!empty($p)) {
       $arrFilter[] = [
-        "LOGIC" => "OR",
-        [
-          "LOGIC" => "AND",
-          ">PROPERTY_MIN_PAYMENT" => 0,
-          ">=PROPERTY_MIN_PAYMENT" => $p[0],
-          "<=PROPERTY_MIN_PAYMENT" => $p[1],
-        ],
-        [
-          "LOGIC" => "AND",
-          ">PROPERTY_MAX_PAYMENT" => 0,
-          ">=PROPERTY_MAX_PAYMENT" => $p[0],
-          "<=PROPERTY_MAX_PAYMENT" => $p[1],
+        "LOGIC" => "AND",
+        [">=PROPERTY_PAYMENT" => $p[0]],
+          ["<=PROPERTY_PAYMENT" => $p[1],
         ],
       ];
     }

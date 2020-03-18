@@ -12,7 +12,7 @@ if (!$USER->IsAuthorized()) {
   $arFields = [
     "PROPERTY_VALUES" => [
       "COMPANY" => $arCompany["fields"]["ID"],
-      "ID_USER" => $USER->GetID(),
+      "ID_USER" => $_POST["job"]["id_user"],
       "RESUME" => $_POST["job"]["resume"],
       "VACANCY" => $_POST["job"]["vacancy"],
     ],

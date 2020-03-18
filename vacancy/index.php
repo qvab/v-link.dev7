@@ -8,7 +8,7 @@ $arrFilter = [
 ];
 if (!empty($_GET["search"])) {
   if (!empty($_GET["search"]["payment"])) {
-
+    $p = explode(";", $_GET["search"]["payment"]);
     if (!empty($p)) {
       $arrFilter[] = [
         "LOGIC" => "OR",
@@ -42,7 +42,6 @@ if (!empty($_GET["search"])) {
     if (!empty($_GET["search"]["region"])) {
       $arrFilter["PROPERTY"]["CITY"] = $_GET["search"]["region"];
     }
-
   }
 
 

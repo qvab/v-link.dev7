@@ -2440,6 +2440,12 @@ text-transform:uppercase .menutop-wrap .menu-top .list li:hover a {
   transition: all 0.3s ease 0s;
 }
 
+.single-property h4 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 @media (max-width: 1199px) {
   .single-property {
     margin-bottom: 30px;

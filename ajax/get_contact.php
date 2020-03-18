@@ -29,6 +29,7 @@ if (!$USER->IsAuthorized()) {
 <div class="col-12">
 <br />
 <input type="hidden" name="job[resume]" value="{$_GET['id']}" />
+<input type="hidden" name="job[id_user]" value="{$_GET['id_user']}" />
 <input type="submit" class="btn btn-success btn-xl" value="Отправить приглашение">
 </div>
  </form>

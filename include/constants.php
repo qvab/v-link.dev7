@@ -2,6 +2,12 @@
 
 define("ROOT_TEMPLATE", $_SERVER["DOCUMENT_ROOT"]."/bitrix/templates/lpdobra_standart/");
 define("ROOT", $_SERVER["DOCUMENT_ROOT"]);
+
+define("IB_COMPANIES", 33);
+define("IB_VACANCY", 34);
+define("IB_RESUME", 35);
+
+
 function vd($data, $bPrint = false)
 {
   echo "<pre>";
@@ -125,6 +131,7 @@ function getTypeWork($ids = false)
 function getGrafic($ids = false)
 {
   $arCategories = [];
+  $arIds = [];
   $arSelect = ["ID", "IBLOCK_ID", "NAME", "DETAIL_TEXT", "PROPERTY_*"];
   $arFilter = ["IBLOCK_ID" => 42];
   if (!empty($ids)) {
@@ -184,6 +191,36 @@ function getCurrentCompany()
     return false;
   }
 }
+
+/**
+ * Выборка элемента
+ * @param $iBlockID
+ * @param $id
+ * @return array|bool
+ */
+function getElementIBlock($iBlockID, $id)
+{
+  $res = CIBlockElement::GetList(
+    [],
+    [
+      "IBLOCK_ID" => $iBlockID,
+      "ID" => $id
+    ],
+    false,
+    ["nPageSize" => 1],
+    ["ID", "NAME", "IBLOCK_ID", "DETAIL_TEXT", "PROPERTY_*", "DETAIL_PICTURE", "PREVIEW_PICTURE"]
+  );
+  while ($ob = $res->GetNextElement()) {
+    $arFields = $ob->GetFields();
+    $arProperty = $ob->GetProperties();
+  }
+  if (!empty($arFields)) {
+    return ["fields" => $arFields, "property" => $arProperty];
+  } else {
+    return false;
+  }
+}
+
 
 function getVacancyByUser()
 {
@@ -271,7 +308,7 @@ function showBlockMessage($text, $type = "success", $bReturn = false)
     $res = '<div class="success-resume" style="
     text-align: center;
     color: #fff;
-    background-color: #ff7e0.;
+    background-color: #ff7e00;
     padding: 25px;
     margin: 0 auto;
     border-radius: 16px;
@@ -404,6 +441,112 @@ function searchKeyWord($sTitle, $bResume = false, $bSelectedId = false)
 }
 
 
+function getLocationName($id)
+{
+  CModule::IncludeModule("sale");
+  $locationId = $id;
+  $sNameLocation = '';
+  $arSelectLocation = CSaleLocation::GetByID($locationId);
+  $sNameLocation .= $arSelectLocation["COUNTRY_NAME_ORIG"];
+  if ($arSelectLocation["REGION_ID"] == $locationId) {
+    $sNameLocation .= ", ".$arSelectLocation["REGION_NAME_ORIG"];
+  } elseif ($arSelectLocation["CITY_ID"] == $locationId) {
+    $sNameLocation .= ", ".$arSelectLocation["CITY_NAME_ORIG"];
+  }
+  return $sNameLocation;
+}
+
+
+function getPathImg($id)
+{
+
+}
+
+
+function getPayment($minPayment, $maxPayment)
+{
+  $sPayment = "Не указана";
+  if (
+    !empty($maxPayment)
+    && !empty($minPayment)
+  ) {
+    $sPayment = finance($minPayment)." - ".finance($maxPayment);
+  } elseif (
+    !empty($maxPayment)
+    && empty($minPayment)
+  ) {
+    $sPayment = "До ".finance($maxPayment);
+  } elseif (
+    empty($maxPayment)
+    && !empty($minPayment)
+  ) {
+    $sPayment = "От ".finance($minPayment);
+  }
+  return $sPayment;
+}
+
+/**
+ * Добавляет JSON сообьщение в элемент инфоблока по ID
+ * @param $idElement = id элемента
+ * @param $from = кто отправил сообщение
+ * @param $text = текст сообщения
+ */
+function insertMessage($idElement, $initiator = "user", $typeMessage = "message", $arFrom, $arTo, $text)
+{
+  $obIBlock = new CIBlockElement;
+  $obRes = $obIBlock->GetByID($idElement);
+  if ($arRes = $obRes->GetNext()) {
+    $arMessages = json_decode(htmlspecialchars_decode($arRes["DETAIL_TEXT"]), true);
+    $arAddMessage = [
+      "initiator" => $initiator,
+      "type_message" => $typeMessage,
+      "from_id" => $arFrom["id"],
+      "to_id" => $arTo["id"],
+      "from_name" => $arFrom["name"],
+      "to_name" => $arFrom["name"],
+      "created_at" => time(),
+      "text" => $text,
+      "view" => 0
+    ];
+    $arMessages[] = $arAddMessage;
+    $sUpdateMessages = json_encode($arMessages, JSON_UNESCAPED_UNICODE);
+    return $obIBlock->Update($idElement, ["DETAIL_TEXT" => $sUpdateMessages]);
+  }
+}
+
+
+/**
+ * Добавляет JSON сообьщение в элемент инфоблока по ID
+ * @param $idElement = id элемента
+ * @param $from = кто отправил сообщение
+ * @param $text = текст сообщения
+ */
+function readMessages($idElement, $initiator = "user")
+{
+  $obIBlock = new CIBlockElement;
+  $obRes = $obIBlock->GetByID($idElement);
+  if ($arRes = $obRes->GetNext()) {
+    $arMessages = json_decode(htmlspecialchars_decode($arRes["DETAIL_TEXT"]), true);
+    // Читаем все сообщения от компании
+    if ($initiator == "user") {
+      foreach ($arMessages as $k => $val) {
+        if ($val["initiator"] == "company") {
+          $arMessages[$k]["view"] = 1;
+        }
+      }
+    } elseif ($initiator == "company") {
+      foreach ($arMessages as $k => $val) {
+        if ($val["initiator"] == "user") {
+          $arMessages[$k]["view"] = 1;
+        }
+      }
+    }
+    $sUpdateMessages = json_encode($arMessages, JSON_UNESCAPED_UNICODE);
+    $obIBlock->Update($idElement, ["DETAIL_TEXT" => $sUpdateMessages]);
+  }
+}
+
+
 /**
  * Управление вакансиями
  * Class Vacancy
@@ -496,7 +639,7 @@ class Vacancy
       "DETAIL_TEXT" => $this->req["company"]["description"],
       "DETAIL_PICTURE" => $this->cfile->MakeFileArray($this->idFile),
       "PREVIEW_PICTURE" => $this->cfile->MakeFileArray($this->idFile),
-      "ACTIVE" => "N",
+      "ACTIVE" => "Y",
       "IBLOCK_ID" => 35,
     ];
 
